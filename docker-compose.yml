@@ -1,0 +1,86 @@
+version: "2.2"
+
+services:
+  everythingcharge-rabbitmq:
+    image: rabbitmq:3.12.0-management
+    restart: always
+    container_name: everythingcharge-rabbitmq
+    env_file:
+      - .env
+    ports:
+      - "${RABBITMQ_PORT}:5672"
+      - "${RABBITMQ_UI_PORT}:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER}"
+      RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASS}"
+    healthcheck:
+      test: "exit 0"
+    networks:
+      - app-network
+
+  everythingcharge-db:
+    image: postgres:15.3-bullseye
+    restart: always
+    container_name: everythingcharge-db
+    volumes:
+      - ./db_data/postgres:/var/lib/postgres
+    env_file:
+      - .env
+    ports:
+      - "${DB_PORT}:5432"
+    environment:
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: "${DB_NAME}"
+      PGDATA: "/var/lib/postgres"
+    healthcheck:
+      test: "exit 0"
+    networks:
+      - app-network
+
+  everythingcharge-worker:
+    container_name: everythingcharge-worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend/worker:/usr/src/ocpp/worker
+    restart: always
+    ports:
+      - "${WS_SERVER_PORT}:${WS_SERVER_PORT}"
+    env_file:
+      - .env
+    depends_on:
+      everythingcharge-rabbitmq:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  everythingcharge-api:
+    container_name: everythingcharge-api
+    build:
+      context: .
+    volumes:
+      - ./backend:/usr/src/ocpp/api
+    ports:
+      - "${HTTP_SERVER_PORT}:${HTTP_SERVER_PORT}"
+    env_file:
+      - .env
+    networks:
+      - app-network
+    restart: always
+    command: >
+      sh -c "cd /usr/src/ocpp/api && \
+      uvicorn app:app --host 0.0.0.0 --port ${HTTP_SERVER_PORT} --reload"
+    depends_on:
+      everythingcharge-rabbitmq:
+        condition: service_healthy
+      everythingcharge-db:
+        condition: service_healthy
+    healthcheck:
+      test: "exit 0"
+
+networks:
+  app-network:
+    driver: bridge
+

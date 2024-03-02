@@ -1,0 +1,6 @@
+fastapi
+propan
+websockets
+uvicorn
+loguru
+aio_pika
