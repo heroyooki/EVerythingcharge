@@ -2,22 +2,22 @@ FROM python:3.11.3-slim-bullseye
 
 RUN apt-get update
 
-RUN mkdir -p /usr/src/ocpp/api
-RUN mkdir -p /usr/src/ocpp/worker
+RUN mkdir -p /ocpp/api
+RUN mkdir -p /ocpp/worker
 
-RUN mkdir -p /usr/src/ocpp/frontend
+RUN mkdir -p /ocpp/frontend
 
-WORKDIR /usr/src/ocpp
+WORKDIR /ocpp/api
 
-COPY backend /usr/src/ocpp/api
-COPY backend/worker /usr/src/ocpp/worker
+COPY backend /ocpp/api
+COPY backend/worker /ocpp/worker
 
-COPY frontend /usr/src/ocpp/frontend
+COPY frontend /ocpp/frontend
 
-ENV PYTHONPATH="/usr/src/ocpp/api:/usr/src/ocpp/worker"
+ENV PYTHONPATH="/ocpp/api:/ocpp/worker"
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-RUN pip install -r api/requirements.txt --upgrade pip
+RUN pip install -r requirements.txt --upgrade pip
 
-CMD ["python", "/usr/src/ocpp/worker/main.py"]
+CMD ["python", "/ocpp/worker/main.py"]
