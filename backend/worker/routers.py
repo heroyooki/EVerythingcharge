@@ -1,31 +1,11 @@
-from uuid import uuid4
+from typing import Annotated
 
-from core.settings import (
-    CHARGE_POINT_ID_HEADER_NAME,
-    EVENTS_EXCHANGE_NAME,
-    TASKS_EXCHANGE_NAME
-)
+from fast_depends import inject, Depends
 
-from propan.brokers.rabbit import (
-    RabbitExchange,
-    ExchangeType
-)
+from core import Settings, EventsExchange
 
 
 class MessagesRouter:
-
-    worker_queue_name = f"{TASKS_EXCHANGE_NAME}.{uuid4().hex}"
-
-    events_exchange = RabbitExchange(
-        EVENTS_EXCHANGE_NAME,
-        auto_delete=True
-    )
-
-    tasks_exchange = RabbitExchange(
-        TASKS_EXCHANGE_NAME,
-        auto_delete=True,
-        type=ExchangeType.FANOUT
-    )
 
     def __init__(self, ws_server=None, broker=None):
         self.ws_server = ws_server
@@ -33,18 +13,44 @@ class MessagesRouter:
 
     def with_ws_server(self, ws_server):
         self.ws_server = ws_server
+        return self
 
     def with_broker(self, broker):
         self.broker = broker
+        return self
 
-    async def redirect_message_to_websocket(self, body, headers):
+    @inject
+    async def redirect_message_to_websocket(
+            self,
+            body,
+            headers,
+            settings: Settings
+    ):
         async for connection in self.ws_server.connections:
-            if headers[CHARGE_POINT_ID_HEADER_NAME] == connection.charge_point_id:
+            if headers[settings.CHARGE_POINT_ID_HEADER_NAME] \
+                    == connection.charge_point_id:
                 await connection.send(body)
 
-    async def redirect_message_to_broker(self, message, charge_point_id):
+    @inject
+    async def redirect_message_to_broker(
+            self,
+            message,
+            charge_point_id,
+            settings: Settings,
+            exchange: EventsExchange
+    ):
         await self.broker.publish(
             message,
-            exchange=self.events_exchange,
-            headers={CHARGE_POINT_ID_HEADER_NAME: charge_point_id}
+            exchange=exchange,
+            headers={settings.CHARGE_POINT_ID_HEADER_NAME: charge_point_id}
         )
+
+
+router = MessagesRouter()
+
+
+async def get_router():
+    return router
+
+
+Router = Annotated[MessagesRouter, Depends(get_router)]
