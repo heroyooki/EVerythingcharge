@@ -5,70 +5,53 @@ import websockets
 from fast_depends import inject
 from loguru import logger
 from propan import Context
+from propan.annotations import ContextRepo
 
-from core import tasks_exchange, broker, Settings, settings, JSONLoader, TasksRepo
+from core import tasks_exchange, broker, Settings, settings, TasksRepo, PayloadJsonDumper
 from worker.protocols import BaseWebSocketServerProtocol
-from worker.routers import Router
+from worker.router import redirect_payload_to_broker, redirect_payload_to_websocket
 
 
 @broker.handle(
     f"{settings.TASKS_EXCHANGE_NAME}.{uuid4().hex}",
     exchange=tasks_exchange
 )
-async def accept_message_from_broker(
-        body: JSONLoader,
-        router: Router,
-        message=Context()
-):
-    await router.redirect_message_to_websocket(body, message.headers)
+async def accept_payload_from_broker(payload: PayloadJsonDumper, message=Context()):
+    await redirect_payload_to_websocket(payload=payload, headers=message.headers)
 
 
-@inject
-async def on_websocket_connect(
-        connection: BaseWebSocketServerProtocol,
-        path: str,
-        router: Router
-):
+async def on_websocket_connect(connection: BaseWebSocketServerProtocol, path: str):
     connection.set_charge_point_id(path)
+    logger.info(f"Accepted connection from {connection.charge_point_id}")
+
     while True:
-        message = await connection.recv()
-        await router.redirect_message_to_broker(
-            message,
-            connection.charge_point_id
-        )
+        payload = await connection.recv()
+        logger.info(f"Received payload from {connection.charge_point_id}: {payload}")
+        await redirect_payload_to_broker(payload=payload, charge_point_id=connection.charge_point_id)
 
 
 @inject
 async def main(
-        router: Router,
         settings: Settings,
         tasks_repo: TasksRepo,
-        broker=Context()
+        context: ContextRepo,
+        broker=Context(),
 ):
     server = await websockets.serve(
         on_websocket_connect,
         '0.0.0.0',
         settings.WS_SERVER_PORT,
-        create_protocol=BaseWebSocketServerProtocol,
-        logger=logger
+        create_protocol=BaseWebSocketServerProtocol
     )
-    router.with_ws_server(server) \
-        .with_broker(broker)
+    context.set_global("ws_server", server)
 
-    task = asyncio.create_task(router.broker.start())
+    task = asyncio.create_task(broker.start())
     # Save a reference to the result of this function, to avoid a task disappearing mid-execution.
     # The event loop only keeps weak references to tasks.
     tasks_repo.add(task)
 
-    # Ensure the router has running broker
-    broker_starting_timeout = 15  # seconds
-    for _ in range(broker_starting_timeout):
-        if router.broker.started:
-            break
-        else:
-            await asyncio.sleep(1)
-
-    await router.ws_server.wait_closed()
+    logger.info(f"Start websockets server, listening on {settings.WS_SERVER_PORT} port.")
+    await server.wait_closed()
 
 
 if __name__ == "__main__":

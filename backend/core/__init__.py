@@ -1,5 +1,5 @@
 import json
-from typing import Annotated, Any, Dict
+from typing import Annotated, Any, Dict, List, Union
 
 from propan import Depends
 from propan import RabbitBroker
@@ -18,18 +18,12 @@ from core.settings import (
 background_tasks = set()
 broker = RabbitBroker(MESSAGES_BROKER_URL)
 
-
-async def tasks_repo():
-    return background_tasks
-
-
-async def get_settings():
-    return settings
-
-
-TasksRepo = Annotated[set, Depends(tasks_repo)]
-JSONLoader = Annotated[Dict, Depends(lambda body: json.loads(body))]
-Settings = Annotated[Any, Depends(get_settings)]
+TasksRepo = Annotated[set, Depends(lambda: background_tasks)]
+PayloadJsonLoader = Annotated[
+    Union[Dict, List], Depends(lambda payload: json.loads(payload) if isinstance(payload, str) else payload)]
+PayloadJsonDumper = Annotated[
+    str, Depends(lambda payload: json.dumps(payload) if isinstance(payload, Dict) else payload)]
+Settings = Annotated[Any, Depends(lambda: settings)]
 
 events_exchange = RabbitExchange(
     EVENTS_EXCHANGE_NAME,
@@ -42,13 +36,5 @@ tasks_exchange = RabbitExchange(
     type=ExchangeType.FANOUT
 )
 
-
-async def get_exchange(name: str):
-    return {
-        EVENTS_EXCHANGE_NAME: events_exchange,
-        TASKS_EXCHANGE_NAME: tasks_exchange
-    }[name]
-
-
-EventsExchange = Annotated[RabbitExchange, Depends(lambda: get_exchange(EVENTS_EXCHANGE_NAME))]
-TasksExchange = Annotated[RabbitExchange, Depends(get_exchange(TASKS_EXCHANGE_NAME))]
+EventsExchange = Annotated[RabbitExchange, Depends(lambda: events_exchange)]
+TasksExchange = Annotated[RabbitExchange, Depends(lambda: tasks_exchange)]
