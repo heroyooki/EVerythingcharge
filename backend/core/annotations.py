@@ -1,5 +1,4 @@
-import json
-from typing import Annotated, Union, Dict, List, Any
+from typing import Annotated, Any
 
 from propan import apply_types, Depends
 from propan.brokers.rabbit import RabbitExchange
@@ -30,20 +29,12 @@ async def get_tasks_exchange(settings: Settings):
 
 
 @apply_types
-async def get_logger(settings: Settings):
-    return settings.logger
+async def get_logger():
+    from loguru import logger
+    return logger
 
 
 Logger = Annotated[Any, Depends(get_logger)]
 TasksRepo = Annotated[set, Depends(get_tasks_repository)]
-
-PayloadJsonLoader = Annotated[
-    Union[Dict, List], Depends(
-        lambda payload: json.loads(payload) if isinstance(payload, str) and payload else payload)]
-
-PayloadJsonDumper = Annotated[
-    str, Depends(lambda payload: json.dumps(payload) if isinstance(payload, Dict) else payload)]
-
 EventsExchange = Annotated[RabbitExchange, Depends(get_events_exchange)]
-
 TasksExchange = Annotated[RabbitExchange, Depends(get_tasks_exchange)]

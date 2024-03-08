@@ -1,16 +1,18 @@
 import asyncio
 import uuid
-from datetime import datetime
 
 from ocpp.routing import on, create_route_map
-from ocpp.v16 import call_result, ChargePoint as cp
-from ocpp.v16.enums import Action, RegistrationStatus
+from ocpp.v16 import ChargePoint as cp
 from propan import Context, apply_types
 
 from core.annotations import Settings, TasksExchange
+from rest.charge_points.scenarios import BootNotificationScenario
 
 
-class OCPP16ChargePoint(cp):
+class OCPP16ChargePoint(
+    cp,
+    BootNotificationScenario
+):
     """
     Using 'this' instead of 'self':
     https://github.com/Lancetnik/FastDepends/issues/37#issuecomment-1854732858
@@ -51,16 +53,3 @@ class OCPP16ChargePoint(cp):
 
     async def start(this):
         pass
-
-    @on(Action.BootNotification)
-    def on_boot_notification(
-            this,
-            charge_point_vendor: str,
-            charge_point_model: str,
-            **kwargs
-    ):
-        return call_result.BootNotificationPayload(
-            current_time=datetime.utcnow().isoformat(),
-            interval=10,
-            status=RegistrationStatus.accepted,
-        )

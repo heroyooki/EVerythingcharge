@@ -59,8 +59,6 @@ STRIPE_API_KEY = os.environ["STRIPE_API_KEY"]
 INVITATION_LINK_EXPIRE_AFTER = int(os.environ["INVITATION_LINK_EXPIRE_AFTER"])
 TRANSACTION_TRACK_ID_EXPIRE_AFTER = 3600  # 1 hour
 
-HEARTBEAT_INTERVAL = 60
-
 MAX_ACTIONS_LENGTH = 30
 
 RABBITMQ_PORT = os.environ["RABBITMQ_PORT"]
@@ -98,3 +96,5 @@ tasks_exchange = RabbitExchange(
     auto_delete=True,
     type=ExchangeType.FANOUT
 )
+
+HEARTBEAT_INTERVAL = int(os.environ.get("HEARTBEAT_INTERVAL", 60))
