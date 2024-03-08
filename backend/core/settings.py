@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 
 from loguru import logger
+from propan.brokers.rabbit import RabbitExchange, RabbitBroker, ExchangeType
 
 DEBUG = os.environ.get("DEBUG") == "1"
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(os.path.curdir)))
@@ -72,6 +73,8 @@ MESSAGES_BROKER_URL = f"amqp://{RABBITMQ_USER}:{RABBITMQ_PASS}@{RABBITMQ_HOST}:{
 
 EVENTS_EXCHANGE_NAME = os.environ.get("EVENTS_EXCHANGE_NAME", "events")
 EVENTS_QUEUE_NAME = os.environ.get("EVENTS_QUEUE_NAME", "events")
+NEW_CONNECTION_QUEUE_NAME = os.environ.get("NEW_CONNECTION_QUEUE_NAME", "new_connections")
+LOST_CONNECTION_QUEUE_NAME = os.environ.get("LOST_CONNECTION_QUEUE_NAME", "lost_connections")
 TASKS_EXCHANGE_NAME = os.environ.get("TASKS_EXCHANGE_NAME", "tasks")
 MAX_MESSAGE_PRIORITY = 10
 REGULAR_MESSAGE_PRIORITY = 5
@@ -80,5 +83,18 @@ LOG_FILEPATH = os.environ["LOG_FILEPATH"]
 HTTP_SERVER_HOST = os.environ["HTTP_SERVER_HOST"]
 HTTP_SERVER_PORT = int(os.environ["HTTP_SERVER_PORT"])
 OCPP_VERSION = os.environ["OCPP_VERSION"]
+# Response from the charging station
+RESPONSE_TIMEOUT = int(os.environ.get("RESPONSE_TIMEOUT", 30))
 
 CHARGE_POINT_ID_HEADER_NAME = "Charge-Point-Id"
+background_tasks = set()
+broker = RabbitBroker(MESSAGES_BROKER_URL)
+events_exchange = RabbitExchange(
+    EVENTS_EXCHANGE_NAME,
+    auto_delete=True
+)
+tasks_exchange = RabbitExchange(
+    TASKS_EXCHANGE_NAME,
+    auto_delete=True,
+    type=ExchangeType.FANOUT
+)
