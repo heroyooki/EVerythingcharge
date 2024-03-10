@@ -71,9 +71,15 @@ MESSAGES_BROKER_URL = f"amqp://{RABBITMQ_USER}:{RABBITMQ_PASS}@{RABBITMQ_HOST}:{
 
 EVENTS_EXCHANGE_NAME = os.environ.get("EVENTS_EXCHANGE_NAME", "events")
 EVENTS_QUEUE_NAME = os.environ.get("EVENTS_QUEUE_NAME", "events")
+
 NEW_CONNECTION_QUEUE_NAME = os.environ.get("NEW_CONNECTION_QUEUE_NAME", "new_connections")
 LOST_CONNECTION_QUEUE_NAME = os.environ.get("LOST_CONNECTION_QUEUE_NAME", "lost_connections")
+
 TASKS_EXCHANGE_NAME = os.environ.get("TASKS_EXCHANGE_NAME", "tasks")
+
+CONNECTIONS_EXCHANGE_NAME = os.environ.get("CONNECTIONS_EXCHANGE_NAME", "connections")
+FORCE_CLOSE_CONNECTION_QUEUE_NAME = os.environ.get("FORCE_CLOSE_CONNECTION_QUEUE_NAME", "force_close")
+
 MAX_MESSAGE_PRIORITY = 10
 REGULAR_MESSAGE_PRIORITY = 5
 LOW_MESSAGE_PRIORITY = 1
@@ -95,6 +101,11 @@ tasks_exchange = RabbitExchange(
     TASKS_EXCHANGE_NAME,
     auto_delete=True,
     type=ExchangeType.FANOUT
+)
+connections_exchange = RabbitExchange(
+    CONNECTIONS_EXCHANGE_NAME,
+    auto_delete=True,
+    type=ExchangeType.TOPIC
 )
 
 HEARTBEAT_INTERVAL = int(os.environ.get("HEARTBEAT_INTERVAL", 60))

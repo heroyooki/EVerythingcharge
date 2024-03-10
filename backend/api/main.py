@@ -1,24 +1,28 @@
 from __future__ import annotations
 
 import asyncio
+from typing import Callable, Tuple
 
 from fastapi import FastAPI
 from loguru import logger
 from propan import Context, apply_types, Depends
 from propan.annotations import ContextRepo
 
-from api.dependables import ChargePoint, get_id_from_headers
-from core.annotations import TasksRepo
+from api.dependables import ChargePoint
+from core.annotations import TasksRepo, get_id_from_headers
 from core.settings import (
     broker,
     events_exchange,
+    connections_exchange,
     NEW_CONNECTION_QUEUE_NAME,
     LOST_CONNECTION_QUEUE_NAME,
-    EVENTS_QUEUE_NAME
+    EVENTS_QUEUE_NAME,
+    FORCE_CLOSE_CONNECTION_QUEUE_NAME,
+    CHARGE_POINT_ID_HEADER_NAME
 )
 
 
-@broker.handle(NEW_CONNECTION_QUEUE_NAME, exchange=events_exchange)
+@broker.handle(NEW_CONNECTION_QUEUE_NAME, exchange=connections_exchange)
 async def accept_new_connection(
         charge_point_id=Depends(get_id_from_headers),
         response_queues=Context()
@@ -28,9 +32,19 @@ async def accept_new_connection(
                 f"(charge_point_id={charge_point_id}, "
                 f"response_queue={response_queues[charge_point_id]}"
                 )
+    if not charge_point_id:
+        await broker.publish(
+            "[]",
+            exchange=connections_exchange,
+            routing_key=f"{FORCE_CLOSE_CONNECTION_QUEUE_NAME}.*",
+            content_type="text/plain",
+            headers={
+                CHARGE_POINT_ID_HEADER_NAME: charge_point_id
+            }
+        )
 
 
-@broker.handle(LOST_CONNECTION_QUEUE_NAME, exchange=events_exchange)
+@broker.handle(LOST_CONNECTION_QUEUE_NAME, exchange=connections_exchange)
 async def process_lost_connection(
         charge_point_id=Depends(get_id_from_headers),
         response_queues=Context()
@@ -43,11 +57,20 @@ async def process_lost_connection(
 async def handle_events(
         payload: str,
         charge_point_id=Depends(get_id_from_headers),
-        charge_point=ChargePoint()
+        charge_point=ChargePoint(),
 ):
     logger.info(f"Accepted payload from the station (payload={payload}, "
                 f"charge_point_id={charge_point_id}")
-    await charge_point.route_message(payload)
+
+    @apply_types
+    async def with_context(context: Tuple, callable: Callable, context_repo: ContextRepo):
+        with context_repo.scope(*context):
+            await callable()
+
+    await with_context(
+        ("charge_point_id", charge_point_id),
+        lambda: charge_point.route_message(payload)
+    )
 
 
 app = FastAPI()

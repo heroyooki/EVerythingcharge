@@ -1,11 +1,11 @@
 import asyncio
 import uuid
 
-from ocpp.routing import on, create_route_map
+from ocpp.routing import create_route_map
 from ocpp.v16 import ChargePoint as cp
 from propan import Context, apply_types
 
-from core.annotations import Settings, TasksExchange
+from core.annotations import Settings, TasksExchange, AMQPHeaders
 from rest.charge_points.scenarios import BootNotificationScenario
 
 
@@ -37,8 +37,8 @@ class OCPP16ChargePoint(
     async def _send(
             this,
             payload,
-            settings: Settings,
             exchange: TasksExchange,
+            amqp_headers: AMQPHeaders,
             broker=Context()
     ):
         await broker.publish(
@@ -46,9 +46,7 @@ class OCPP16ChargePoint(
             exchange=exchange,
             routing_key="",
             content_type="text/plain",
-            headers={
-                settings.CHARGE_POINT_ID_HEADER_NAME: this.id
-            }
+            headers=amqp_headers
         )
 
     async def start(this):
