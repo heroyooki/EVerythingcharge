@@ -3,9 +3,7 @@ from typing import Dict
 from propan import Context, apply_types
 from propan.brokers.rabbit import RabbitExchange
 
-from core.annotations import (
-    Logger
-)
+from core.annotations import Logger
 
 
 @apply_types
@@ -17,16 +15,6 @@ async def redirect_payload_to_websocket(
     for connection in ws_server.websockets:
         if charge_point_id == connection.charge_point_id:
             await connection.send(payload)
-
-
-@apply_types
-async def force_close_websocket_connection(
-        charge_point_id: str,
-        ws_server=Context(),
-):
-    for connection in ws_server.websockets:
-        if charge_point_id == connection.charge_point_id:
-            await connection.close()
 
 
 @apply_types

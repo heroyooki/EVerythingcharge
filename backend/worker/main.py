@@ -23,9 +23,23 @@ from core.settings import (
 from worker.protocols import BaseWebSocketServerProtocol
 from worker.router import (
     redirect_payload_to_broker,
-    redirect_payload_to_websocket,
-    force_close_websocket_connection
+    redirect_payload_to_websocket
 )
+
+
+@broker.handle(
+    RabbitQueue(f"{FORCE_CLOSE_CONNECTION_QUEUE_NAME}.{uuid4().hex}",
+                routing_key=f"{FORCE_CLOSE_CONNECTION_QUEUE_NAME}.*",
+                auto_delete=True),
+    exchange=connections_exchange
+)
+async def close_websocket_connection(
+        charge_point_id=Depends(get_id_from_headers),
+        ws_server=Context()
+):
+    for connection in ws_server.websockets:
+        if charge_point_id == connection.charge_point_id:
+            await connection.close()
 
 
 @broker.handle(uuid4().hex, exchange=tasks_exchange)
@@ -36,19 +50,9 @@ async def accept_payload_from_broker(
     await redirect_payload_to_websocket(charge_point_id, payload)
 
 
-@broker.handle(
-    RabbitQueue(f"{FORCE_CLOSE_CONNECTION_QUEUE_NAME}.{uuid4().hex}",
-                routing_key=f"{FORCE_CLOSE_CONNECTION_QUEUE_NAME}.*",
-                auto_delete=True),
-    exchange=connections_exchange
-)
-async def close_websocket_connection(charge_point_id=Depends(get_id_from_headers)):
-    await force_close_websocket_connection(charge_point_id)
-
-
 @apply_types
-async def process_new_connection(
-        settings: Settings,
+async def warn_about_connection(
+        routing_key: str,
         exchange: ConnectionsExchange,
         amqp_headers: AMQPHeaders,
 
@@ -56,20 +60,7 @@ async def process_new_connection(
     await redirect_payload_to_broker(
         headers=amqp_headers,
         exchange=exchange,
-        routing_key=settings.NEW_CONNECTION_QUEUE_NAME
-    )
-
-
-@apply_types
-async def process_lost_connection(
-        settings: Settings,
-        exchange: ConnectionsExchange,
-        amqp_headers: AMQPHeaders
-):
-    await redirect_payload_to_broker(
-        headers=amqp_headers,
-        exchange=exchange,
-        routing_key=settings.LOST_CONNECTION_QUEUE_NAME
+        routing_key=routing_key
     )
 
 
@@ -95,7 +86,8 @@ async def process_payloads_from_websocket(
 async def on_websocket_connect(
         connection: BaseWebSocketServerProtocol,
         path: str,
-        context: ContextRepo
+        context: ContextRepo,
+        settings: Settings
 ):
     if not connection.subprotocol:
         return await connection.close()
@@ -103,12 +95,13 @@ async def on_websocket_connect(
     connection.set_charge_point_id(path)
 
     with context.scope("charge_point_id", connection.charge_point_id):
-        await process_new_connection()
+
+        await warn_about_connection(settings.NEW_CONNECTION_QUEUE_NAME)
 
         try:
             await process_payloads_from_websocket(connection=connection)
         except websockets.exceptions.ConnectionClosedOK:
-            await process_lost_connection()
+            await warn_about_connection(settings.LOST_CONNECTION_QUEUE_NAME)
 
 
 @apply_types
