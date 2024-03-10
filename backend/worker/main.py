@@ -102,8 +102,6 @@ async def on_websocket_connect(
 
     connection.set_charge_point_id(path)
 
-    broker.handle(uuid4().hex, exchange=tasks_exchange)(accept_payload_from_broker)
-
     with context.scope("charge_point_id", connection.charge_point_id):
         await process_new_connection()
 
