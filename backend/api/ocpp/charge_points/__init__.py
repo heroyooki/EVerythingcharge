@@ -1,23 +1,18 @@
 import asyncio
 import uuid
 
-from ocpp.routing import create_route_map
-from ocpp.v16 import ChargePoint as cp
-from propan import Context, apply_types
+from ocpp.charge_point import ChargePoint as cp
+from ocpp.messages import create_route_map
+from propan import apply_types, Context
 
 from core.annotations import Settings, TasksExchange, AMQPHeaders
-from rest.charge_points.scenarios import BootNotificationScenario
 
 
-class OCPP16ChargePoint(
-    cp,
-    BootNotificationScenario
-):
+class ChargePoint(cp):
     """
     Using 'this' instead of 'self':
     https://github.com/Lancetnik/FastDepends/issues/37#issuecomment-1854732858
     """
-    _ocpp_version = "1.6"
 
     @apply_types
     def __init__(

@@ -12,7 +12,8 @@ from core.annotations import (
     Logger,
     ConnectionsExchange,
     EventsExchange,
-    AMQPHeaders, get_id_from_headers
+    AMQPHeaders,
+    get_id_from_headers
 )
 from core.settings import (
     broker,

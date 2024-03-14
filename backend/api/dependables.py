@@ -1,6 +1,6 @@
 from fast_depends.library import CustomField
 
-from api.charge_point import OCPP16ChargePoint
+from api.ocpp.charge_points.v16 import ChargePoint as OCPP16ChargePoint
 
 
 class ChargePoint(CustomField):
