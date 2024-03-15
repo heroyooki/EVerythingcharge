@@ -2,13 +2,14 @@ import asyncio
 import uuid
 
 from ocpp.charge_point import ChargePoint as cp
-from ocpp.messages import create_route_map
+from ocpp.routing import create_route_map
 from propan import apply_types, Context
+from propan.annotations import ContextRepo
 
 from core.annotations import Settings, TasksExchange, AMQPHeaders
 
 
-class ChargePoint(cp):
+class OCPPHandler(cp):
     """
     Using 'this' instead of 'self':
     https://github.com/Lancetnik/FastDepends/issues/37#issuecomment-1854732858
@@ -27,6 +28,11 @@ class ChargePoint(cp):
         this._response_queue = response_queues[this.id]
         this._response_timeout = settings.RESPONSE_TIMEOUT
         this.route_map = create_route_map(this)
+
+    @apply_types
+    async def route_message(this, raw_msg, context: ContextRepo):
+        with context.scope("charge_point_id", this.id):
+            await super().route_message(raw_msg)
 
     @apply_types
     async def _send(

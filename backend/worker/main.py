@@ -1,4 +1,5 @@
 import asyncio
+import json
 from uuid import uuid4
 
 import websockets
@@ -59,6 +60,7 @@ async def warn_about_connection(
 
 ):
     await redirect_payload_to_broker(
+        payload=json.dumps([]),
         headers=amqp_headers,
         exchange=exchange,
         routing_key=routing_key

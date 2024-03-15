@@ -48,8 +48,8 @@ async def get_logger():
 
 async def get_id_from_headers(
         settings: Settings,
-        headers=Context("message.headers")
-):
+        headers: Dict = Context("message.headers")
+) -> str:
     return headers[settings.CHARGE_POINT_ID_HEADER_NAME]
 
 

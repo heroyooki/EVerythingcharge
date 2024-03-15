@@ -23,7 +23,7 @@ async def redirect_payload_to_broker(
         exchange: RabbitExchange,
         routing_key: str,
         logger: Logger,
-        payload: str = "[]",
+        payload: str,
         broker=Context(),
 ):
     logger.info(
