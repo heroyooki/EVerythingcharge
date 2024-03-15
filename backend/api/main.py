@@ -77,3 +77,5 @@ async def process_lost_connection(
 ):
     logger.info(f"Lost connection with {charge_point_id}")
     response_queues.pop(charge_point_id, None)
+
+# test
