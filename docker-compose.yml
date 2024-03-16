@@ -38,22 +38,6 @@ services:
     networks:
       - app-network
 
-  everythingcharge-worker:
-    container_name: everythingcharge-worker
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - "${WS_SERVER_PORT}:${WS_SERVER_PORT}"
-    env_file:
-      - .env
-    depends_on:
-      everythingcharge-rabbitmq:
-        condition: service_healthy
-    networks:
-      - app-network
-
   everythingcharge-api:
     container_name: everythingcharge-api
     build:

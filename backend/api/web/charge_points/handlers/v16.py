@@ -1,7 +1,7 @@
 from ocpp.v16 import ChargePoint as ChargePoint16
 
 from api.web.charge_points.handlers.base import OCPPHandler
-from api.web.charge_points.scenarios.v16.boot_notification import BootNotificationScenario
+from api.web.charge_points.ocpp.scenarios.v16.boot_notification import BootNotificationScenario
 
 
 class OCPP16Handler(
