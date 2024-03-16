@@ -31,27 +31,27 @@ Make sure to specify the correct `RABBITMQ_HOST` in your `.env` file, then proce
 
 How it works.
 ----------
-API - The only service that accepts requests from the front-end and has a monopoly access
+`API` - The only service that accepts requests from the front-end and has a monopoly access
 to the database. It implements the entire business logic.
 
-Worker - Accepts and maintains WebSocket connections from the charging stations. It receives messages from both
-the stations and API service. If a station sends a message, the service forwards it to the API service
-through the queue. If the API service sends a message, the service redirects it to the station through an existing
-connection. Each new worker creates a new queue in rabbitmq and listens for messages from it.
+`Worker` - Accepts and maintains WebSocket connections from the charging stations. It receives messages from both
+the stations and `API` service. If a station sends a message, the service forwards it to the `API` service
+through the queue. If the `API` service sends a message, the service redirects it to the station through an existing
+connection. Each new `worker` creates a new queue in rabbitmq and listens for messages from it.
 
-RabbitMQ - Works independently from the other services. Fanout exchange applied.
+`RabbitMQ` - Works independently from the other services. Fanout exchange applied.
 
-DB - Postgresql database.
+`DB` - Postgresql database.
 
 Scenarios
 --------
-Station connected.
-Every time the station connects to the worker, the API service can reject the connection if the station
+`Station connected`.
+Every time the station connects to the `worker`, the `API` service can reject the connection if the station
 is not authorized. Conversely, if the station is recognized, the connection will be successfully established.
 
-Station disconnected.
-Every time the worker loses connection with a specific station, the API service will be notified. Upon receiving
-this notification, the statuses of the station and connectors will be updated to Unavailable.
+`Station disconnected`.
+Every time the `worker` loses connection with a specific station, the `API` service will be notified. Upon receiving
+this notification, the statuses of the station and connectors will be updated to `Unavailable`.
 
 
 
