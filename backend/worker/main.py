@@ -3,6 +3,7 @@ import json
 from uuid import uuid4
 
 import websockets
+from loguru import logger
 from propan import Context, apply_types, Depends
 from propan.annotations import ContextRepo
 from propan.brokers.rabbit import RabbitQueue
@@ -10,11 +11,9 @@ from propan.brokers.rabbit import RabbitQueue
 from core.annotations import (
     TasksRepo,
     Settings,
-    Logger,
     ConnectionsExchange,
     EventsExchange,
-    AMQPHeaders,
-    get_id_from_headers
+    AMQPHeaders
 )
 from core.settings import (
     broker,
@@ -22,6 +21,7 @@ from core.settings import (
     connections_exchange,
     FORCE_CLOSE_CONNECTION_QUEUE_NAME
 )
+from core.utils import get_id_from_amqp_headers
 from worker.protocols import BaseWebSocketServerProtocol
 from worker.router import (
     redirect_payload_to_broker,
@@ -36,7 +36,7 @@ from worker.router import (
     exchange=connections_exchange
 )
 async def close_websocket_connection(
-        charge_point_id=Depends(get_id_from_headers),
+        charge_point_id=Depends(get_id_from_amqp_headers),
         ws_server=Context()
 ):
     for connection in ws_server.websockets:
@@ -47,7 +47,7 @@ async def close_websocket_connection(
 @broker.handle(uuid4().hex, exchange=tasks_exchange)
 async def accept_payload_from_broker(
         payload: str,
-        charge_point_id=Depends(get_id_from_headers)
+        charge_point_id=Depends(get_id_from_amqp_headers)
 ):
     await redirect_payload_to_websocket(charge_point_id, payload)
 
@@ -112,7 +112,6 @@ async def main(
         settings: Settings,
         tasks_repo: TasksRepo,
         context: ContextRepo,
-        logger: Logger,
         broker=Context(),
 ):
     server = await websockets.serve(

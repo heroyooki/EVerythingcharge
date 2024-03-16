@@ -1,9 +1,8 @@
 from typing import Dict
 
+from loguru import logger
 from propan import Context, apply_types
 from propan.brokers.rabbit import RabbitExchange
-
-from core.annotations import Logger
 
 
 @apply_types
@@ -22,7 +21,6 @@ async def redirect_payload_to_broker(
         headers: Dict,
         exchange: RabbitExchange,
         routing_key: str,
-        logger: Logger,
         payload: str,
         broker=Context(),
 ):

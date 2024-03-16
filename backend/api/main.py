@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any
+from typing import Any, Dict
 
 from fastapi import FastAPI
 from loguru import logger
 from propan import apply_types, Depends, Context
 from propan.annotations import ContextRepo
 
-from api.web.charge_points import get_handler
-from core.annotations import TasksRepo, get_id_from_headers
+from api.web.charge_points import get_handler, get_charge_point
+from core.annotations import TasksRepo
 from core.settings import (
     broker,
     EVENTS_QUEUE_NAME,
@@ -20,6 +20,7 @@ from core.settings import (
     CHARGE_POINT_ID_HEADER_NAME,
     LOST_CONNECTION_QUEUE_NAME
 )
+from core.utils import get_id_from_amqp_headers
 
 app = FastAPI()
 
@@ -50,15 +51,11 @@ async def handle_events(
 
 @broker.handle(NEW_CONNECTION_QUEUE_NAME, exchange=connections_exchange)
 async def accept_new_connection(
-        charge_point_id=Depends(get_id_from_headers),
-        response_queues=Context()
+        charge_point_id: str = Depends(get_id_from_amqp_headers),
+        charge_point: Any = Depends(get_charge_point),
+        response_queues: Dict = Context()
 ):
-    response_queues[charge_point_id] = asyncio.Queue()
-    logger.info(f"Accepted connection "
-                f"(charge_point_id={charge_point_id}, "
-                f"response_queue={response_queues[charge_point_id]}"
-                )
-    if not charge_point_id:
+    if not charge_point:
         await broker.publish(
             "[]",
             exchange=connections_exchange,
@@ -68,11 +65,18 @@ async def accept_new_connection(
                 CHARGE_POINT_ID_HEADER_NAME: charge_point_id
             }
         )
+        logger.info(f"Not found '{charge_point_id}'. Cancelling connection.")
+        return
+    response_queues[charge_point_id] = asyncio.Queue()
+    logger.info(f"Accepted connection "
+                f"(charge_point_id={charge_point_id}, "
+                f"response_queue={response_queues[charge_point_id]}"
+                )
 
 
 @broker.handle(LOST_CONNECTION_QUEUE_NAME, exchange=connections_exchange)
 async def process_lost_connection(
-        charge_point_id=Depends(get_id_from_headers),
+        charge_point_id=Depends(get_id_from_amqp_headers),
         response_queues=Context()
 ):
     logger.info(f"Lost connection with {charge_point_id}")
