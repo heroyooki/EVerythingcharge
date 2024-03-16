@@ -7,6 +7,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
+from api.web.networks.models import Network
 from core.models import Model
 
 
@@ -22,7 +23,7 @@ class ChargePoint(Model):
     ocpp_version = Column(String, nullable=False)
 
     network_id = Column(String, ForeignKey("networks.id"), nullable=False)
-    network = relationship("Network", back_populates="charge_points", lazy="joined")
+    network = relationship(Network, back_populates="charge_points", lazy="joined")
 
     def __repr__(self):
         return f"ChargePoint (id={self.id}, status={self.status}, location={self.location})"

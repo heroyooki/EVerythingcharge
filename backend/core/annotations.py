@@ -46,16 +46,17 @@ async def get_logger():
     return logger
 
 
-async def get_id_from_headers(
-        settings: Settings,
-        headers: Dict = Context("message.headers")
-) -> str:
-    return headers[settings.CHARGE_POINT_ID_HEADER_NAME]
-
-
 AMQPHeaders = Annotated[Dict, Depends(get_default_amqp_headers)]
 Logger = Annotated[Any, Depends(get_logger)]
 TasksRepo = Annotated[set, Depends(get_tasks_repository)]
 EventsExchange = Annotated[RabbitExchange, Depends(get_events_exchange)]
 TasksExchange = Annotated[RabbitExchange, Depends(get_tasks_exchange)]
 ConnectionsExchange = Annotated[RabbitExchange, Depends(get_connections_exchange)]
+
+
+async def get_id_from_headers(
+        settings: Settings,
+        headers: Dict = Context("message.headers")
+) -> str:
+    result = headers[settings.CHARGE_POINT_ID_HEADER_NAME]
+    return result

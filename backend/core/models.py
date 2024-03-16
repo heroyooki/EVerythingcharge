@@ -15,6 +15,14 @@ asession = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 Base = declarative_base()
 
 
+async def get_session() -> AsyncSession:
+    async with asession() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
+
+
 def generate_default_id():
     chunks = str(uuid4()).split("-")
     return f"{chunks[0]}{chunks[-1]}"
