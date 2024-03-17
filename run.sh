@@ -42,9 +42,9 @@ docker system prune -f
 docker volume prune -f
 
 if [ $api_flag -eq 1 ]; then
-    docker build -t everythingcharge-worker .
     docker-compose up --build -d
 elif [ $worker_flag -eq 1 ]; then
+    docker build -t everythingcharge-worker .
     docker run -it -d --env-file .env \
       --network everythingcharge_app-network \
       --name everythingcharge-worker \
