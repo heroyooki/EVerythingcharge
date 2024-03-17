@@ -55,7 +55,7 @@ async def get_connections_exchange(settings: Any = Depends(get_settings)):
 
 async def get_id_from_amqp_headers(
         settings: Any = Depends(get_settings),
-        headers: Dict = Context("message.headers")
+        headers: Dict = Context("message.headers"),
 ) -> str:
     result = headers[settings.CHARGE_POINT_ID_HEADER_NAME]
     return result

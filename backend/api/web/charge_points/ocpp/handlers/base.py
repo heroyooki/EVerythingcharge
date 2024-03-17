@@ -7,6 +7,7 @@ from propan import apply_types, Context, Depends
 from propan.annotations import ContextRepo
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.web.charge_points.models import ChargePoint
 from core.annotations import Settings, TasksExchange, AMQPHeaders
 from core.models import get_session
 
@@ -20,11 +21,12 @@ class OCPPHandler(cp):
     @apply_types
     def __init__(
             this,
-            charge_point_id: str,
+            charge_point: ChargePoint,
             settings: Settings,
             response_queues=Context()
     ):
-        this.id = charge_point_id
+        this.id = charge_point.id
+        this.charge_point = charge_point
         this._call_lock = asyncio.Lock()
         this._unique_id_generator = uuid.uuid4
         this._response_queue = response_queues[this.id]

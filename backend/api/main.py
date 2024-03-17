@@ -8,7 +8,7 @@ from loguru import logger
 from propan import apply_types, Depends, Context
 from propan.annotations import ContextRepo
 
-from api.web.charge_points import get_handler, get_charge_point_service
+from api.web.charge_points import get_charge_point_service, get_handler
 from core.annotations import TasksRepo
 from core.settings import (
     broker,
@@ -43,7 +43,7 @@ async def handle_events(
 ):
     logger.info(f"Accepted payload from the station "
                 f"(payload={payload}, "
-                f"charge_point_id={handler.id}"
+                f"charge_point_id={handler.charge_point.id}"
                 )
     await handler.route_message(payload)
 
