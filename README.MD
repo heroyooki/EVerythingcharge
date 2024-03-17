@@ -25,7 +25,7 @@ Run `api` service
 
 - ```$ sh run.sh -s api```
 
-Make sure to specify the correct `RABBITMQ_HOST` in your `.env` file, then proceed to run the worker service.
+Make sure to specify the correct `RABBITMQ_HOST` in your `.env` file, then proceed to run the `worker` service.
 
 - ```$ sh run.sh -s worker```
 
