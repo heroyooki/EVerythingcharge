@@ -3,10 +3,12 @@ import uuid
 
 from ocpp.charge_point import ChargePoint as cp
 from ocpp.routing import create_route_map
-from propan import apply_types, Context
+from propan import apply_types, Context, Depends
 from propan.annotations import ContextRepo
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.annotations import Settings, TasksExchange, AMQPHeaders
+from core.models import get_session
 
 
 class OCPPHandler(cp):
@@ -30,9 +32,18 @@ class OCPPHandler(cp):
         this.route_map = create_route_map(this)
 
     @apply_types
-    async def route_message(this, raw_msg, context: ContextRepo):
-        with context.scope("charge_point_id", this.id):
-            await super().route_message(raw_msg)
+    async def route_message(
+            this,
+            raw_msg,
+            context: ContextRepo,
+            session: AsyncSession = Depends(get_session)
+    ):
+        context.set_local("session", session)
+        context.set_local("charge_point_id", this.id)
+
+        await super().route_message(raw_msg)
+
+        await session.commit()
 
     @apply_types
     async def _send(

@@ -8,7 +8,7 @@ from loguru import logger
 from propan import apply_types, Depends, Context
 from propan.annotations import ContextRepo
 
-from api.web.charge_points import get_handler, get_charge_point
+from api.web.charge_points import get_handler, get_charge_point_service
 from core.annotations import TasksRepo
 from core.settings import (
     broker,
@@ -45,16 +45,16 @@ async def handle_events(
                 f"(payload={payload}, "
                 f"charge_point_id={handler.id}"
                 )
-
     await handler.route_message(payload)
 
 
 @broker.handle(NEW_CONNECTION_QUEUE_NAME, exchange=connections_exchange)
 async def accept_new_connection(
         charge_point_id: str = Depends(get_id_from_amqp_headers),
-        charge_point: Any = Depends(get_charge_point),
+        service: Any = Depends(get_charge_point_service),
         response_queues: Dict = Context()
 ):
+    charge_point = await service.get_charge_point(charge_point_id)
     if not charge_point:
         await broker.publish(
             "[]",
