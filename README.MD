@@ -43,15 +43,27 @@ connection. Each new `worker` creates a new queue in rabbitmq and listens for me
 
 `DB` - Postgresql database.
 
-Scenarios
+Currenlty implemented scenarios.
 --------
 `Station connected`.
 Every time the station connects to the `worker`, the `API` service can reject the connection if the station
 is not authorized. Conversely, if the station is recognized, the connection will be successfully established.
 
+`Authenticate station`.
+Authentication is based on the stations's existence in the `charge_points` table in the database.
+
 `Station disconnected`.
 Every time the `worker` loses connection with a specific station, the `API` service will be notified. Upon receiving
 this notification, the statuses of the station and connectors will be updated to `Unavailable`.
+
+`BootNotification`.
+The station provides additional information about itself in the message, including model, vendor, serial number etc.
+This information is used to update the charging station's details in the database. The `API` service responds
+with a Heartbeat interval, specified in the env variable `HEARTBEAT_INTERVAL`.
+
+`StatusNotification`.
+In progress ...
+
 
 
 
