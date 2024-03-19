@@ -17,16 +17,24 @@ The number of slave servers can be adjusted as needed to meet business requireme
 Deployment
 ----------
 
-Setup environment variables
+### If you want to run the app on the single server:
 
 - ```$ cp .env.backend .env```
+- Setup environment variables
+- ```$ sh run.sh -s api -s worker```
 
-Run `api` service
+### If you want to run the `api` and the `worker` in the different servers:
 
+##### Run `api` on the `{server#1}`:
+
+- ```$ cp .env.backend .env```
+- Setup environment variables
 - ```$ sh run.sh -s api```
 
-Make sure to specify the correct `RABBITMQ_HOST` in your `.env` file, then proceed to run the `worker` service.
+##### Run `worker` on the `{server#2}` (in this way, you can have a single running `api` and a few `workers`):
 
+- ```$ cp .env.backend .env```
+- Setup environment variables
 - ```$ sh run.sh -s worker```
 
 How it works.

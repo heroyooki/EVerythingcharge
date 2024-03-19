@@ -39,7 +39,7 @@ services:
       - app-network
 
   everythingcharge-api:
-    container_name: everythingcharge-api
+    container_name: EVapi
     build:
       context: .
     volumes:

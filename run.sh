@@ -41,14 +41,35 @@ done
 docker system prune -f
 docker volume prune -f
 
-if [ $api_flag -eq 1 ]; then
+if [ $api_flag -eq 1 ] && [ $worker_flag -eq 0 ]; then
+    echo "\n >>> Build and run 'api' service ... \n"
     docker-compose up --build -d
-elif [ $worker_flag -eq 1 ]; then
+    docker logs -f --tail 50 EVapi
+
+# This option is using to run the worker and api on the same server.
+elif [ $worker_flag -eq 1 ] && [ $api_flag -eq 1 ]; then
+    echo "\n >>> Build and run 'api' and 'worker' services ... \n"
+    docker-compose up --build -d
+    inspect_output=$(docker inspect everythingcharge-rabbitmq)
+    ip_address=$(echo "$inspect_output" | jq -r '.[0].NetworkSettings.Networks."everythingcharge_app-network".IPAddress')
     docker build -t everythingcharge-worker .
     docker run -it -d --env-file .env \
       --network everythingcharge_app-network \
-      --name everythingcharge-worker \
+      --name EVworker \
+      -p "$WS_SERVER_PORT:$WS_SERVER_PORT" \
+      -e RABBITMQ_HOST=$ip_address \
+      everythingcharge-worker
+    echo "\n >>> Connecting worker to the queue on the '$ip_address' host ... \n"
+    docker logs -f --tail 50 EVapi & docker logs -f --tail 50 EVworker
+
+# This option is using to run the worker on the different server.
+elif [ $worker_flag -eq 1 ] && [ $api_flag -eq 0 ]; then
+    echo "\n >>> Build and run 'worker' service ... \n"
+    docker build -t everythingcharge-worker .
+    docker run -it -d --env-file .env \
+      --name EVworker \
       -p "$WS_SERVER_PORT:$WS_SERVER_PORT" \
       everythingcharge-worker
-    echo "Connecting worker to the queue on the '$RABBITMQ_HOST' host ..."
+    echo "\n >>> Connecting worker to the queue on the '$RABBITMQ_HOST' host ... \n"
+    docker logs -f --tail 50 EVworker
 fi
