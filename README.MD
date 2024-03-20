@@ -14,28 +14,6 @@ regarded as a slave server. Slave servers directly engage with the charge points
 master server to exchange messages.
 The number of slave servers can be adjusted as needed to meet business requirements.
 
-Deployment
-----------
-
-### If you want to run the app on the single server:
-
-- ```$ cp .env.backend .env```
-- Setup environment variables
-- ```$ sh run.sh -s api -s worker```
-
-### If you want to run the `api` and the `worker` in the different servers:
-
-##### Run `api` on the `{server#1}`:
-
-- ```$ cp .env.backend .env```
-- Setup environment variables
-- ```$ sh run.sh -s api```
-
-##### Run `worker` on the `{server#2}` (in this way, you can have a single running `api` and a few `workers`):
-
-- ```$ cp .env.backend .env```
-- Setup environment variables
-- ```$ sh run.sh -s worker```
 
 How it works.
 ----------
@@ -50,6 +28,21 @@ connection. Each new `worker` creates a new queue in rabbitmq and listens for me
 `RabbitMQ` - Works independently from the other services. Fanout exchange applied.
 
 `DB` - Postgresql database.
+
+Deployment
+----------
+
+### Raise app on the single server:
+
+- ```$ cp .env.backend .env```
+- Setup environment variables
+- ```$ sh run.sh -s api -s worker```
+
+### Raise one more `worker` on the different server:
+
+- ```$ cp .env.backend .env```
+- Make sure that the `RABBITMQ_HOST` refers to the host with running `api`.
+- ```$ sh run.sh -s worker```
 
 Currenlty implemented scenarios.
 --------
