@@ -30,8 +30,7 @@ async def get_session() -> AsyncSession:
 
 
 def generate_default_id():
-    chunks = str(uuid4()).split("-")
-    return f"{chunks[0]}{chunks[-1]}"
+    return uuid4()
 
 
 class Model(Base):

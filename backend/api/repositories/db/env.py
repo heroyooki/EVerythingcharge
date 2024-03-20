@@ -5,11 +5,11 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from api.web.charge_points.models import *
-from api.web.networks.models import *
+from api.web.users.models import *
 from core.models import Base
 from core.settings import DATABASE_SYNC_URL
 
-__all__ = ["Network", "ChargePoint"]
+__all__ = ["Network", "ChargePoint", "User"]
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
