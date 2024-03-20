@@ -38,9 +38,6 @@ while getopts ":s:" opt; do
     esac
 done
 
-docker system prune -f
-docker volume prune -f
-
 if [ $api_flag -eq 1 ] && [ $worker_flag -eq 0 ]; then
     echo "\n >>> Build and run 'api' service ... \n"
     docker-compose up --build -d
