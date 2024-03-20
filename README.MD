@@ -1,3 +1,5 @@
+### Forever public and in free access!
+
 The OCPP Management System is primarily designed for Charge Point Operators (CPOs).
 ----------
 Supports both OCPP versions: 1.6 and 2.0.1.
