@@ -30,7 +30,8 @@ async def get_session() -> AsyncSession:
 
 
 def generate_default_id():
-    return uuid4()
+    # ocpp requires max 20 characters for some id values
+    return uuid4().hex[:20]
 
 
 class Model(Base):

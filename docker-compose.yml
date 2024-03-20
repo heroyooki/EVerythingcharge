@@ -53,7 +53,7 @@ services:
     restart: always
     command: >
       sh -c "cd /ocpp/backend/api && \
-      uvicorn main:app --host 0.0.0.0 --port ${HTTP_SERVER_PORT} --reload"
+             uvicorn main:app --host 0.0.0.0 --port ${HTTP_SERVER_PORT} --reload"
     depends_on:
       everythingcharge-rabbitmq:
         condition: service_healthy

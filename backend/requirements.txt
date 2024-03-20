@@ -16,6 +16,7 @@ loguru==0.7.2
 multidict==6.0.5
 ocpp==0.26.0
 pamqp==3.3.0
+passlib==1.7.4
 propan==0.1.5.26
 pydantic==2.6.3
 pydantic_core==2.16.3
