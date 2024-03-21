@@ -8,6 +8,9 @@ from loguru import logger
 from propan import apply_types, Depends, Context
 from propan.annotations import ContextRepo
 
+from api.web.auth.backends.jwt import JWTAuthenticationBackend
+from api.web.auth.middlewares.jwt import JWTAuthenticationMiddleware
+from api.web.auth.repositories import CookiesRepo
 from api.web.charge_points import get_charge_point_service, get_handler
 from core.annotations import TasksRepo
 from core.settings import (
@@ -23,6 +26,10 @@ from core.settings import (
 from core.utils import get_id_from_amqp_headers
 
 app = FastAPI()
+app.add_middleware(
+    JWTAuthenticationMiddleware,
+    backend=JWTAuthenticationBackend(CookiesRepo())
+)
 
 
 @app.on_event("startup")

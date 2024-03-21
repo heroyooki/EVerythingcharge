@@ -4,8 +4,8 @@ from propan import apply_types, Depends, Context
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.exceptions import NotFound
 from api.web.charge_points.models import ChargePoint
+from api.web.exceptions import NotFound
 from core.models import get_session
 
 

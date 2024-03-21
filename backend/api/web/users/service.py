@@ -2,8 +2,11 @@ from typing import Dict
 
 from passlib.context import CryptContext
 from propan import apply_types, Depends, Context
+from sqlalchemy import select, or_
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.web.users.models import User
+from core.models import get_session
 
 _password_context = None
 
@@ -24,4 +27,13 @@ async def create_user(
     data["password"] = passwd_context.hash(data["password"])
     user = User(**data)
     session.add(user)
+    return user
+
+
+async def get_user(value: str, session: AsyncSession = Depends(get_session)) -> User | None:
+    result = await session.execute(
+        select(User) \
+            .where(or_(User.id == value, User.email == value))
+    )
+    user = result.scalars().first()
     return user

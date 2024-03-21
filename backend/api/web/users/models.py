@@ -11,6 +11,8 @@ from core.models import Model
 class User(Model):
     __tablename__ = "users"
 
+    is_authenticated = True
+
     password = Column(String(124), nullable=True, unique=False)
     email = Column(String(48), nullable=False, unique=True)
     first_name = Column(String(24), nullable=False, unique=False)
