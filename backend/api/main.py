@@ -30,7 +30,6 @@ from core.settings import (
 from core.utils import get_id_from_amqp_headers
 
 app = FastAPI()
-app.add_middleware(DBSessionMiddleware)
 app.add_middleware(
     JWTAuthenticationMiddleware,
     backend=JWTAuthenticationBackend(CookiesRepo())
@@ -42,6 +41,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(DBSessionMiddleware)
 app.include_router(users_router)
 
 
