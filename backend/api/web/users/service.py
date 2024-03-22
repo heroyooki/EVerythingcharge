@@ -2,7 +2,7 @@ from typing import Dict, Annotated, Union
 
 from fastapi import Depends
 from passlib.context import CryptContext
-from propan import apply_types, Context
+from propan import apply_types
 from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,16 +10,22 @@ from api.web.users.models import User
 from api.web.users.views import LoginView
 from core.models import get_session
 
-_password_context = None
+_password_context: CryptContext | None = None
+
+
+def get_password_context() -> CryptContext:
+    global _password_context
+    if not _password_context:
+        _password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    return _password_context
 
 
 @apply_types
 async def create_user(
         data: Dict,
-        passwd_context: "PasswdContext",
-        session=Context(),
+        session: AsyncSession = Depends(get_session),
 ) -> User:
-    data["password"] = passwd_context.hash(data["password"])
+    data["password"] = get_password_context().hash(data["password"])
     user = User(**data)
     session.add(user)
     return user
@@ -43,13 +49,6 @@ def get_email(data: Union[LoginView, str]):
 
 def get_password(data: Union[LoginView, str]):
     return getattr(data, "password", data)
-
-
-def get_password_context() -> CryptContext:
-    global _password_context
-    if not _password_context:
-        _password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    return _password_context
 
 
 Email = Annotated[Union[LoginView, str], Depends(get_email)]

@@ -15,6 +15,7 @@ from api.web.auth.repositories import CookiesRepo
 from api.web.charge_points import get_charge_point_service, get_handler
 from api.web.users.controllers import router as users_router
 from core.annotations import TasksRepo
+from core.middlewares import DBSessionMiddleware
 from core.settings import (
     broker,
     EVENTS_QUEUE_NAME,
@@ -29,6 +30,7 @@ from core.settings import (
 from core.utils import get_id_from_amqp_headers
 
 app = FastAPI()
+app.add_middleware(DBSessionMiddleware)
 app.add_middleware(
     JWTAuthenticationMiddleware,
     backend=JWTAuthenticationBackend(CookiesRepo())

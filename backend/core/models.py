@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from uuid import uuid4
 
 import arrow
@@ -22,6 +23,15 @@ Base = declarative_base()
 
 
 async def get_session() -> AsyncSession:
+    async with asession() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
+
+
+@asynccontextmanager
+async def get_contextual_session() -> AsyncSession:
     async with asession() as session:
         try:
             yield session
