@@ -4,7 +4,7 @@ import arrow
 from jose import jwt
 from starlette.authentication import AuthenticationBackend as BaseAuthenticationBackend
 
-from api.web.auth.repositories import WebRepository
+from api.repositories.web import WebRepository
 from api.web.auth.views import AuthToken
 
 

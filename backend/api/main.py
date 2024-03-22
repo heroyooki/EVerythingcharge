@@ -9,9 +9,9 @@ from loguru import logger
 from propan import apply_types, Depends, Context
 from propan.annotations import ContextRepo
 
+from api.repositories.web import CookiesRepo
 from api.web.auth.backends.jwt import JWTAuthenticationBackend
 from api.web.auth.middlewares.jwt import JWTAuthenticationMiddleware
-from api.web.auth.repositories import CookiesRepo
 from api.web.charge_points import get_charge_point_service, get_handler
 from api.web.users.controllers import router as users_router
 from core.annotations import TasksRepo
