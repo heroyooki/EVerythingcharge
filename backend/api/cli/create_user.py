@@ -5,7 +5,7 @@ from loguru import logger
 from sqlalchemy.exc import IntegrityError, DBAPIError
 
 from api.web.users.service import create_user
-from api.web.users.views import CreateUserView
+from api.web.users.views import CreateUserPayloadView
 from core.models import get_contextual_session
 
 
@@ -15,7 +15,7 @@ async def run(
         first_name: str,
         last_name: str,
 ):
-    view = CreateUserView(
+    view = CreateUserPayloadView(
         email=email,
         password=password,
         first_name=first_name,

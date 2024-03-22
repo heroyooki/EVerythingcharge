@@ -7,7 +7,7 @@ from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.web.users.models import User
-from api.web.users.views import LoginView
+from api.web.users.views import LoginPayloadView
 from core.models import get_session
 
 _password_context: CryptContext | None = None
@@ -43,15 +43,15 @@ async def get_user(
     return user
 
 
-def get_email(data: Union[LoginView, str]):
+def get_email(data: Union[LoginPayloadView, str]):
     return getattr(data, "email", data)
 
 
-def get_password(data: Union[LoginView, str]):
+def get_password(data: Union[LoginPayloadView, str]):
     return getattr(data, "password", data)
 
 
-Email = Annotated[Union[LoginView, str], Depends(get_email)]
-Password = Annotated[Union[LoginView, str], Depends(get_password)]
+Email = Annotated[Union[LoginPayloadView, str], Depends(get_email)]
+Password = Annotated[Union[LoginPayloadView, str], Depends(get_password)]
 AnnotatedUser = Annotated[User, Depends(get_user)]
 PasswdContext = Annotated[CryptContext, Depends(get_password_context)]

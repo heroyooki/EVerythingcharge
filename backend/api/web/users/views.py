@@ -1,13 +1,13 @@
 from pydantic import BaseModel
 
 
-class CreateUserView(BaseModel):
+class CreateUserPayloadView(BaseModel):
     email: str
     password: str
     first_name: str
     last_name: str
 
 
-class LoginView(BaseModel):
+class LoginPayloadView(BaseModel):
     email: str
     password: str

@@ -42,6 +42,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(DBSessionMiddleware)
+
 app.include_router(users_router)
 
 
