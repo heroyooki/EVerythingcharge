@@ -4,6 +4,7 @@ import asyncio
 from typing import Any, Dict
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from propan import apply_types, Depends, Context
 from propan.annotations import ContextRepo
@@ -12,6 +13,7 @@ from api.web.auth.backends.jwt import JWTAuthenticationBackend
 from api.web.auth.middlewares.jwt import JWTAuthenticationMiddleware
 from api.web.auth.repositories import CookiesRepo
 from api.web.charge_points import get_charge_point_service, get_handler
+from api.web.users.controllers import router as users_router
 from core.annotations import TasksRepo
 from core.settings import (
     broker,
@@ -21,7 +23,8 @@ from core.settings import (
     connections_exchange,
     FORCE_CLOSE_CONNECTION_QUEUE_NAME,
     CHARGE_POINT_ID_HEADER_NAME,
-    LOST_CONNECTION_QUEUE_NAME
+    LOST_CONNECTION_QUEUE_NAME,
+    ALLOWED_ORIGIN
 )
 from core.utils import get_id_from_amqp_headers
 
@@ -30,6 +33,14 @@ app.add_middleware(
     JWTAuthenticationMiddleware,
     backend=JWTAuthenticationBackend(CookiesRepo())
 )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[ALLOWED_ORIGIN],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.include_router(users_router)
 
 
 @app.on_event("startup")

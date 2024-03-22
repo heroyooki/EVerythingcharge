@@ -1,5 +1,6 @@
 import asyncio
 import json
+from typing import Any
 from uuid import uuid4
 
 import websockets
@@ -8,18 +9,12 @@ from propan import Context, apply_types, Depends
 from propan.annotations import ContextRepo
 from propan.brokers.rabbit import RabbitQueue
 
+from core import settings
 from core.annotations import (
     TasksRepo,
-    Settings,
     ConnectionsExchange,
     EventsExchange,
     AMQPHeaders
-)
-from core.settings import (
-    broker,
-    tasks_exchange,
-    connections_exchange,
-    FORCE_CLOSE_CONNECTION_QUEUE_NAME
 )
 from core.utils import get_id_from_amqp_headers
 from worker.protocols import BaseWebSocketServerProtocol
@@ -29,11 +24,11 @@ from worker.router import (
 )
 
 
-@broker.handle(
-    RabbitQueue(f"{FORCE_CLOSE_CONNECTION_QUEUE_NAME}.{uuid4().hex}",
-                routing_key=f"{FORCE_CLOSE_CONNECTION_QUEUE_NAME}.*",
+@settings.broker.handle(
+    RabbitQueue(f"{settings.FORCE_CLOSE_CONNECTION_QUEUE_NAME}.{uuid4().hex}",
+                routing_key=f"{settings.FORCE_CLOSE_CONNECTION_QUEUE_NAME}.*",
                 auto_delete=True),
-    exchange=connections_exchange
+    exchange=settings.connections_exchange
 )
 async def close_websocket_connection(
         charge_point_id=Depends(get_id_from_amqp_headers),
@@ -44,7 +39,7 @@ async def close_websocket_connection(
             await connection.close()
 
 
-@broker.handle(uuid4().hex, exchange=tasks_exchange)
+@settings.broker.handle(uuid4().hex, exchange=settings.tasks_exchange)
 async def accept_payload_from_broker(
         payload: str,
         charge_point_id=Depends(get_id_from_amqp_headers)
@@ -69,10 +64,10 @@ async def warn_about_connection(
 
 @apply_types
 async def process_payloads_from_websocket(
+        routing_key: str,
         connection: BaseWebSocketServerProtocol,
         exchange: EventsExchange,
-        settings: Settings,
-        amqp_headers: AMQPHeaders
+        amqp_headers: AMQPHeaders,
 ):
     while True:
         payload = await connection.recv()
@@ -81,7 +76,7 @@ async def process_payloads_from_websocket(
             payload=payload,
             headers=amqp_headers,
             exchange=exchange,
-            routing_key=settings.EVENTS_QUEUE_NAME
+            routing_key=routing_key
         )
 
 
@@ -89,8 +84,8 @@ async def process_payloads_from_websocket(
 async def on_websocket_connect(
         connection: BaseWebSocketServerProtocol,
         path: str,
-        context: ContextRepo,
-        settings: Settings
+        settings: Any,
+        context: ContextRepo
 ):
     if not connection.subprotocol:
         return await connection.close()
@@ -102,20 +97,20 @@ async def on_websocket_connect(
         await warn_about_connection(settings.NEW_CONNECTION_QUEUE_NAME)
 
         try:
-            await process_payloads_from_websocket(connection=connection)
+            await process_payloads_from_websocket(connection=connection, routing_key=settings.EVENTS_QUEUE_NAME)
         except websockets.exceptions.ConnectionClosedOK:
             await warn_about_connection(settings.LOST_CONNECTION_QUEUE_NAME)
 
 
 @apply_types
 async def main(
-        settings: Settings,
+        settings: Any,
         tasks_repo: TasksRepo,
         context: ContextRepo,
         broker=Context(),
 ):
     server = await websockets.serve(
-        lambda connection, path: on_websocket_connect(connection, path),
+        lambda connection, path: on_websocket_connect(connection, path, settings=settings),
         '0.0.0.0',
         settings.WS_SERVER_PORT,
         create_protocol=BaseWebSocketServerProtocol,
@@ -133,4 +128,4 @@ async def main(
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(main(settings=settings))

@@ -1,23 +1,23 @@
+from __future__ import annotations
+
 from uuid import uuid4
 
 import arrow
-from propan import apply_types
 from sqlalchemy import Column, String, DateTime, Boolean
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from core.annotations import Settings
+from core import settings
 
 
-@apply_types
-def init_db(settings: Settings):
+def init_db(settings):
     engine = create_async_engine(settings.DATABASE_ASYNC_URL)
     return sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
-asession = init_db()
+asession = init_db(settings)
 Base = declarative_base()
 
 

@@ -19,4 +19,4 @@ class User(Model):
     last_name = Column(String(24), nullable=False, unique=False)
 
     def __repr__(self) -> str:
-        return f"User: {self.id}, {self.email}, {self.role}"
+        return f"User: {self.id}, {self.email}"

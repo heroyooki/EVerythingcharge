@@ -7,7 +7,7 @@ from ocpp.v201.enums import RegistrationStatusType, Action
 from propan import apply_types, Depends
 
 from api.web.charge_points import get_charge_point_service
-from core.annotations import Settings
+from core import settings
 from core.utils import get_formatted_utc
 
 
@@ -17,7 +17,7 @@ class BootNotificationScenario:
     @on(Action.BootNotification)
     async def on_boot_notification(
             this,
-            settings: Settings,
+            settings: Depends(lambda: settings),
             utc_datetime: str = Depends(get_formatted_utc),
             charging_station: Dict = Depends(lambda charging_station: charging_station),
             reason: str = Depends(lambda reason: reason),

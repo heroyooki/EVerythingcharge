@@ -6,3 +6,8 @@ class CreateUserView(BaseModel):
     password: str
     first_name: str
     last_name: str
+
+
+class LoginView(BaseModel):
+    email: str
+    password: str
