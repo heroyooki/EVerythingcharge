@@ -2,15 +2,24 @@ from typing import Dict, Annotated, Union
 
 from fastapi import Depends
 from passlib.context import CryptContext
-from propan import apply_types
+from propan import apply_types, Context
 from sqlalchemy import select, or_
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.web.users.models import User
 from api.web.users.views import LoginPayloadView
-from core.models import get_session
 
 _password_context: CryptContext | None = None
+
+
+def get_email(data: Union[LoginPayloadView, str]):
+    return getattr(data, "email", data)
+
+
+def get_password(data: Union[LoginPayloadView, str]):
+    return getattr(data, "password", data)
+
+
+Email = Annotated[Union[LoginPayloadView, str], Depends(get_email)]
 
 
 def get_password_context() -> CryptContext:
@@ -23,7 +32,7 @@ def get_password_context() -> CryptContext:
 @apply_types
 async def create_user(
         data: Dict,
-        session: AsyncSession = Depends(get_session),
+        session=Context(),
 ) -> User:
     data["password"] = get_password_context().hash(data["password"])
     user = User(**data)
@@ -31,27 +40,32 @@ async def create_user(
     return user
 
 
-async def get_user(
-        email: "Email",
-        session: AsyncSession = Depends(get_session)
+@apply_types
+async def get_user_by_email(
+        email: Email,
+        session=Context()
 ) -> User | None:
     result = await session.execute(
         select(User) \
-            .where(or_(User.id == email, User.email == email))
+            .where(or_(User.email == email))
     )
     user = result.scalars().first()
     return user
 
 
-def get_email(data: Union[LoginPayloadView, str]):
-    return getattr(data, "email", data)
+@apply_types
+async def get_user_by_id(
+        user_id: str,
+        session=Context()
+) -> User | None:
+    result = await session.execute(
+        select(User) \
+            .where(or_(User.id == user_id))
+    )
+    user = result.scalars().first()
+    return user
 
 
-def get_password(data: Union[LoginPayloadView, str]):
-    return getattr(data, "password", data)
-
-
-Email = Annotated[Union[LoginPayloadView, str], Depends(get_email)]
 Password = Annotated[Union[LoginPayloadView, str], Depends(get_password)]
-AnnotatedUser = Annotated[User, Depends(get_user)]
+AnnotatedUser = Annotated[User, Depends(get_user_by_email)]
 PasswdContext = Annotated[CryptContext, Depends(get_password_context)]

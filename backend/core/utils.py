@@ -2,7 +2,10 @@ from datetime import datetime
 from typing import Dict, Any
 
 import arrow
-from propan import apply_types, Depends, Context
+from propan import Depends, Context
+
+from core.broker import tasks_exchange, events_exchange, connections_exchange
+from core.settings import background_tasks
 
 
 def get_settings():
@@ -15,7 +18,6 @@ def get_utc() -> datetime:
     return arrow.utcnow().datetime
 
 
-@apply_types
 def get_formatted_utc(
         utc: datetime = Depends(get_utc),
         settings: Any = Depends(get_settings)
@@ -23,7 +25,6 @@ def get_formatted_utc(
     return utc.strftime(settings.UTC_DATETIME_FORMAT)
 
 
-@apply_types
 async def get_default_amqp_headers(
         charge_point_id: str = Context(),
         settings: Any = Depends(get_settings)
@@ -33,24 +34,20 @@ async def get_default_amqp_headers(
     }
 
 
-@apply_types
-async def get_tasks_repository(settings: Any = Depends(get_settings)):
-    return settings.background_tasks
+async def get_tasks_repository():
+    return background_tasks
 
 
-@apply_types
-async def get_events_exchange(settings: Any = Depends(get_settings)):
-    return settings.events_exchange
+async def get_events_exchange():
+    return events_exchange
 
 
-@apply_types
-async def get_tasks_exchange(settings: Any = Depends(get_settings)):
-    return settings.tasks_exchange
+async def get_tasks_exchange():
+    return tasks_exchange
 
 
-@apply_types
-async def get_connections_exchange(settings: Any = Depends(get_settings)):
-    return settings.connections_exchange
+async def get_connections_exchange():
+    return connections_exchange
 
 
 async def get_id_from_amqp_headers(

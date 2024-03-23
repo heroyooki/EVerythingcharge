@@ -3,10 +3,10 @@ import http
 from fastapi import Response
 
 from api.web.exceptions import NotAuthenticated
-from api.web.routing import APIRouter
+from api.web.routing import PublicAPIRouter
 from api.web.users.service import AnnotatedUser, Password, PasswdContext
 
-router = APIRouter()
+router = PublicAPIRouter()
 
 
 @router.post("/login")

@@ -1,39 +1,33 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Dict
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from loguru import logger
-from propan import apply_types, Depends, Context
+from propan import apply_types
 from propan.annotations import ContextRepo
+from sqlalchemy.exc import IntegrityError
+from starlette.middleware.exceptions import ExceptionMiddleware
 
+from api.connections import init_global_scope
 from api.repositories.web import CookiesRepo
 from api.web.auth.backends.jwt import JWTAuthenticationBackend
 from api.web.auth.middlewares.jwt import JWTAuthenticationMiddleware
-from api.web.charge_points import get_charge_point_service, get_handler
+from api.web.charge_points.controllers import router as charge_points_router
+from api.web.exceptions.handlers import unique_violation_exception_handler, common_exceptions_handler
 from api.web.users.controllers import router as users_router
 from core.annotations import TasksRepo
+from core.broker import broker
 from core.middlewares import DBSessionMiddleware
-from core.settings import (
-    broker,
-    EVENTS_QUEUE_NAME,
-    events_exchange,
-    NEW_CONNECTION_QUEUE_NAME,
-    connections_exchange,
-    FORCE_CLOSE_CONNECTION_QUEUE_NAME,
-    CHARGE_POINT_ID_HEADER_NAME,
-    LOST_CONNECTION_QUEUE_NAME,
-    ALLOWED_ORIGIN
-)
-from core.utils import get_id_from_amqp_headers
+from core.settings import ALLOWED_ORIGIN
 
-app = FastAPI()
-app.add_middleware(
-    JWTAuthenticationMiddleware,
-    backend=JWTAuthenticationBackend(CookiesRepo())
+app = FastAPI(
+    exception_handlers={
+        IntegrityError: unique_violation_exception_handler,
+        Exception: common_exceptions_handler
+    }
 )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[ALLOWED_ORIGIN],
@@ -41,9 +35,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(
+    JWTAuthenticationMiddleware,
+    backend=JWTAuthenticationBackend(CookiesRepo())
+)
 app.add_middleware(DBSessionMiddleware)
+app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)
 
 app.include_router(users_router)
+app.include_router(charge_points_router)
 
 
 @app.on_event("startup")
@@ -53,52 +53,4 @@ async def startup(tasks_repo: TasksRepo, context: ContextRepo):
     # Save a reference to the result of this function, to avoid a task disappearing mid-execution.
     # The event loop only keeps weak references to tasks.
     tasks_repo.add(task)
-
-    context.set_global("response_queues", dict())
-
-
-@broker.handle(EVENTS_QUEUE_NAME, exchange=events_exchange)
-async def handle_events(
-        payload: str,
-        handler: Any = Depends(get_handler),
-):
-    logger.info(f"Accepted payload from the station "
-                f"(payload={payload}, "
-                f"charge_point_id={handler.charge_point.id}"
-                )
-    await handler.route_message(payload)
-
-
-@broker.handle(NEW_CONNECTION_QUEUE_NAME, exchange=connections_exchange)
-async def accept_new_connection(
-        charge_point_id: str = Depends(get_id_from_amqp_headers),
-        service: Any = Depends(get_charge_point_service),
-        response_queues: Dict = Context()
-):
-    charge_point = await service.get_charge_point(charge_point_id)
-    if not charge_point:
-        await broker.publish(
-            "[]",
-            exchange=connections_exchange,
-            routing_key=f"{FORCE_CLOSE_CONNECTION_QUEUE_NAME}.*",
-            content_type="text/plain",
-            headers={
-                CHARGE_POINT_ID_HEADER_NAME: charge_point_id
-            }
-        )
-        logger.info(f"Not found '{charge_point_id}'. Cancelling connection.")
-        return
-    response_queues[charge_point_id] = asyncio.Queue()
-    logger.info(f"Accepted connection "
-                f"(charge_point_id={charge_point_id}, "
-                f"response_queue={response_queues[charge_point_id]}"
-                )
-
-
-@broker.handle(LOST_CONNECTION_QUEUE_NAME, exchange=connections_exchange)
-async def process_lost_connection(
-        charge_point_id=Depends(get_id_from_amqp_headers),
-        response_queues=Context()
-):
-    logger.info(f"Lost connection with {charge_point_id}")
-    response_queues.pop(charge_point_id, None)
+    await init_global_scope(context)

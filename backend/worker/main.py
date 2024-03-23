@@ -16,6 +16,11 @@ from core.annotations import (
     EventsExchange,
     AMQPHeaders
 )
+from core.broker import (
+    broker,
+    connections_exchange,
+    tasks_exchange
+)
 from core.utils import get_id_from_amqp_headers
 from worker.protocols import BaseWebSocketServerProtocol
 from worker.router import (
@@ -24,11 +29,11 @@ from worker.router import (
 )
 
 
-@settings.broker.handle(
+@broker.handle(
     RabbitQueue(f"{settings.FORCE_CLOSE_CONNECTION_QUEUE_NAME}.{uuid4().hex}",
                 routing_key=f"{settings.FORCE_CLOSE_CONNECTION_QUEUE_NAME}.*",
                 auto_delete=True),
-    exchange=settings.connections_exchange
+    exchange=connections_exchange
 )
 async def close_websocket_connection(
         charge_point_id=Depends(get_id_from_amqp_headers),
@@ -39,7 +44,7 @@ async def close_websocket_connection(
             await connection.close()
 
 
-@settings.broker.handle(uuid4().hex, exchange=settings.tasks_exchange)
+@broker.handle(uuid4().hex, exchange=tasks_exchange)
 async def accept_payload_from_broker(
         payload: str,
         charge_point_id=Depends(get_id_from_amqp_headers)
@@ -103,12 +108,7 @@ async def on_websocket_connect(
 
 
 @apply_types
-async def main(
-        settings: Any,
-        tasks_repo: TasksRepo,
-        context: ContextRepo,
-        broker=Context(),
-):
+async def main(tasks_repo: TasksRepo, context: ContextRepo):
     server = await websockets.serve(
         lambda connection, path: on_websocket_connect(connection, path, settings=settings),
         '0.0.0.0',

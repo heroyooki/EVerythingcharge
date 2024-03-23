@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 
 from loguru import logger
-from propan.brokers.rabbit import RabbitExchange, RabbitBroker, ExchangeType
 
 DEBUG = os.environ.get("DEBUG") == "1"
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(os.path.curdir)))
@@ -64,21 +63,6 @@ RESPONSE_TIMEOUT = int(os.environ.get("RESPONSE_TIMEOUT", 30))
 
 CHARGE_POINT_ID_HEADER_NAME = "Charge-Point-Id"
 background_tasks = set()
-broker = RabbitBroker(MESSAGES_BROKER_URL)
-events_exchange = RabbitExchange(
-    EVENTS_EXCHANGE_NAME,
-    auto_delete=True
-)
-tasks_exchange = RabbitExchange(
-    TASKS_EXCHANGE_NAME,
-    auto_delete=True,
-    type=ExchangeType.FANOUT
-)
-connections_exchange = RabbitExchange(
-    CONNECTIONS_EXCHANGE_NAME,
-    auto_delete=True,
-    type=ExchangeType.TOPIC
-)
 
 HEARTBEAT_INTERVAL = int(os.environ.get("HEARTBEAT_INTERVAL", 60))
 

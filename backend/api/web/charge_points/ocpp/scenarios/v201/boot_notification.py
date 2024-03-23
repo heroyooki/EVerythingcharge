@@ -17,7 +17,6 @@ class BootNotificationScenario:
     @on(Action.BootNotification)
     async def on_boot_notification(
             this,
-            settings: Depends(lambda: settings),
             utc_datetime: str = Depends(get_formatted_utc),
             charging_station: Dict = Depends(lambda charging_station: charging_station),
             reason: str = Depends(lambda reason: reason),
