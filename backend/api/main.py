@@ -15,6 +15,7 @@ from api.web.auth.backends.jwt import JWTAuthenticationBackend
 from api.web.auth.middlewares.jwt import JWTAuthenticationMiddleware
 from api.web.charge_points.controllers import router as charge_points_router
 from api.web.exceptions.handlers import unique_violation_exception_handler, common_exceptions_handler
+from api.web.networks.controllers import private_router as networks_private_router
 from api.web.users.controllers import (
     public_router as users_public_router,
     private_router as users_private_router
@@ -45,6 +46,7 @@ app.add_middleware(
 app.add_middleware(DBSessionMiddleware)
 app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)
 
+app.include_router(networks_private_router)
 app.include_router(users_private_router)
 app.include_router(users_public_router)
 app.include_router(charge_points_router)
