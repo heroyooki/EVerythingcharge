@@ -7,8 +7,7 @@ from ocpp.v16.enums import Action, RegistrationStatus
 from propan import apply_types, Depends
 
 from api.web.charge_points import get_charge_point_service
-from core import settings
-from core.utils import get_formatted_utc
+from core.utils import get_formatted_utc, get_settings
 
 
 class BootNotificationScenario:
@@ -21,6 +20,7 @@ class BootNotificationScenario:
             charge_point_vendor=Depends(lambda charge_point_vendor: charge_point_vendor),
             charge_point_model=Depends(lambda charge_point_model: charge_point_model),
             service: Any = Depends(get_charge_point_service),
+            settings: Any = Depends(get_settings),
             **kwargs
     ):
         logger.info(

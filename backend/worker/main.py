@@ -1,6 +1,5 @@
 import asyncio
 import json
-from typing import Any
 from uuid import uuid4
 
 import websockets
@@ -9,7 +8,6 @@ from propan import Context, apply_types, Depends
 from propan.annotations import ContextRepo
 from propan.brokers.rabbit import RabbitQueue
 
-from core import settings
 from core.annotations import (
     TasksRepo,
     ConnectionsExchange,
@@ -21,6 +19,13 @@ from core.broker import (
     connections_exchange,
     tasks_exchange
 )
+from core.settings import (
+    FORCE_CLOSE_CONNECTION_QUEUE_NAME,
+    WS_SERVER_PORT,
+    NEW_CONNECTION_QUEUE_NAME,
+    EVENTS_QUEUE_NAME,
+    LOST_CONNECTION_QUEUE_NAME
+)
 from core.utils import get_id_from_amqp_headers
 from worker.protocols import BaseWebSocketServerProtocol
 from worker.router import (
@@ -30,8 +35,8 @@ from worker.router import (
 
 
 @broker.handle(
-    RabbitQueue(f"{settings.FORCE_CLOSE_CONNECTION_QUEUE_NAME}.{uuid4().hex}",
-                routing_key=f"{settings.FORCE_CLOSE_CONNECTION_QUEUE_NAME}.*",
+    RabbitQueue(f"{FORCE_CLOSE_CONNECTION_QUEUE_NAME}.{uuid4().hex}",
+                routing_key=f"{FORCE_CLOSE_CONNECTION_QUEUE_NAME}.*",
                 auto_delete=True),
     exchange=connections_exchange
 )
@@ -89,8 +94,7 @@ async def process_payloads_from_websocket(
 async def on_websocket_connect(
         connection: BaseWebSocketServerProtocol,
         path: str,
-        settings: Any,
-        context: ContextRepo
+        context: ContextRepo,
 ):
     if not connection.subprotocol:
         return await connection.close()
@@ -99,20 +103,20 @@ async def on_websocket_connect(
 
     with context.scope("charge_point_id", connection.charge_point_id):
 
-        await warn_about_connection(settings.NEW_CONNECTION_QUEUE_NAME)
+        await warn_about_connection(NEW_CONNECTION_QUEUE_NAME)
 
         try:
-            await process_payloads_from_websocket(connection=connection, routing_key=settings.EVENTS_QUEUE_NAME)
+            await process_payloads_from_websocket(connection=connection, routing_key=EVENTS_QUEUE_NAME)
         except websockets.exceptions.ConnectionClosedOK:
-            await warn_about_connection(settings.LOST_CONNECTION_QUEUE_NAME)
+            await warn_about_connection(LOST_CONNECTION_QUEUE_NAME)
 
 
 @apply_types
 async def main(tasks_repo: TasksRepo, context: ContextRepo):
     server = await websockets.serve(
-        lambda connection, path: on_websocket_connect(connection, path, settings=settings),
+        lambda connection, path: on_websocket_connect(connection, path),
         '0.0.0.0',
-        settings.WS_SERVER_PORT,
+        WS_SERVER_PORT,
         create_protocol=BaseWebSocketServerProtocol,
         subprotocols=['ocpp1.6', 'ocpp2.0.1']
     )
@@ -123,9 +127,9 @@ async def main(tasks_repo: TasksRepo, context: ContextRepo):
     # The event loop only keeps weak references to tasks.
     tasks_repo.add(task)
 
-    logger.info(f"Start websockets server, listening on {settings.WS_SERVER_PORT} port.")
+    logger.info(f"Start websockets server, listening on {WS_SERVER_PORT} port.")
     await server.wait_closed()
 
 
 if __name__ == "__main__":
-    asyncio.run(main(settings=settings))
+    asyncio.run(main())

@@ -3,11 +3,12 @@ from traceback import format_exc
 
 from fastapi import Request
 from loguru import logger
+from propan import apply_types, Depends
 from sqlalchemy.exc import IntegrityError
 from starlette import status
 from starlette.responses import JSONResponse
 
-from core import settings
+from core.utils import get_settings
 
 
 async def unique_violation_exception_handler(request: Request, exc: IntegrityError):
@@ -19,7 +20,12 @@ async def unique_violation_exception_handler(request: Request, exc: IntegrityErr
     )
 
 
-async def common_exceptions_handler(request: Request, exc: IntegrityError):
+@apply_types
+async def common_exceptions_handler(
+        request: Request,
+        exc: Exception,
+        settings=Depends(get_settings)
+):
     _exc = format_exc()
     logger.error("Caught unexcpected server error: %r" % format_exc())
     if settings.DEBUG:

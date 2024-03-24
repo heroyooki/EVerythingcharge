@@ -4,13 +4,12 @@ from typing import Dict, Any
 import arrow
 from propan import Depends, Context
 
+from core import settings
 from core.broker import tasks_exchange, events_exchange, connections_exchange
 from core.settings import background_tasks
 
 
 def get_settings():
-    from core import settings
-
     return settings
 
 

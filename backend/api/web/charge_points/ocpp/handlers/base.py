@@ -3,32 +3,34 @@ import uuid
 
 from ocpp.charge_point import ChargePoint as cp
 from ocpp.routing import create_route_map
+from propan import Depends
 from propan import apply_types, Context
 
 from api.web.charge_points.models import ChargePoint
-from core import settings
 from core.annotations import TasksExchange, AMQPHeaders
+from core.utils import get_settings
 
 
 class OCPPHandler(cp):
     """
-    Using 'this' instead of 'self':
+    Using 'self_' instead of 'self':
     https://github.com/Lancetnik/FastDepends/issues/37#issuecomment-1854732858
     """
 
     @apply_types
     def __init__(
-            this,
+            self_,
             charge_point: ChargePoint,
-            response_queues=Context()
+            response_queues=Context(),
+            settings=Depends(get_settings)
     ):
-        this.id = charge_point.id
-        this.charge_point = charge_point
-        this._call_lock = asyncio.Lock()
-        this._unique_id_generator = uuid.uuid4
-        this._response_queue = response_queues[this.id]
-        this._response_timeout = settings.RESPONSE_TIMEOUT
-        this.route_map = create_route_map(this)
+        self_.id = charge_point.id
+        self_.charge_point = charge_point
+        self_._call_lock = asyncio.Lock()
+        self_._unique_id_generator = uuid.uuid4
+        self_._response_queue = response_queues[self_.id]
+        self_._response_timeout = settings.RESPONSE_TIMEOUT
+        self_.route_map = create_route_map(self_)
 
     @apply_types
     async def _send(
