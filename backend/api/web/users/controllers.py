@@ -3,13 +3,14 @@ import http
 from fastapi import Response
 
 from api.web.exceptions import NotAuthenticated
-from api.web.routing import PublicAPIRouter
+from api.web.routing import PublicAPIRouter, PrivateAPIRouter
 from api.web.users.service import AnnotatedUser, Password, PasswdContext
 
-router = PublicAPIRouter()
+public_router = PublicAPIRouter()
+private_router = PrivateAPIRouter()
 
 
-@router.post("/login")
+@public_router.post("/login")
 async def login(
         response: Response,
         password: Password,
@@ -21,3 +22,8 @@ async def login(
     response.headers["X-Authenticated"] = user.id
     response.status_code = http.HTTPStatus.ACCEPTED
     return response
+
+
+@private_router.post("/logout")
+async def logout():
+    raise NotAuthenticated()
