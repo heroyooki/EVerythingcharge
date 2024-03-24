@@ -1,4 +1,4 @@
-from typing import Dict, Annotated, Union
+from typing import Annotated, Union
 
 from fastapi import Depends
 from passlib.context import CryptContext
@@ -6,7 +6,7 @@ from propan import apply_types, Context
 from sqlalchemy import select, or_
 
 from api.web.users.models import User
-from api.web.users.views import LoginPayloadView
+from api.web.users.views import LoginPayloadView, CreateUserPayloadView
 
 _password_context: CryptContext | None = None
 
@@ -31,12 +31,13 @@ def get_password_context() -> CryptContext:
 
 @apply_types
 async def create_user(
-        data: Dict,
+        data: CreateUserPayloadView,
         session=Context(),
-) -> User:
-    data["password"] = get_password_context().hash(data["password"])
-    user = User(**data)
+):
+    data.password = get_password_context().hash(data.password)
+    user = User(**data.dict())
     session.add(user)
+    await session.flush()
     return user
 
 

@@ -1,13 +1,24 @@
 import http
 
-from fastapi import Response
+from fastapi import Response, Depends
 
 from api.web.exceptions import NotAuthenticated
 from api.web.routing import PublicAPIRouter, PrivateAPIRouter
-from api.web.users.service import AnnotatedUser, Password, PasswdContext
+from api.web.users.models import User
+from api.web.users.service import AnnotatedUser, Password, PasswdContext, create_user
+from api.web.users.views import UserView
 
 public_router = PublicAPIRouter()
 private_router = PrivateAPIRouter()
+
+
+@private_router.post(
+    "/users",
+    status_code=http.HTTPStatus.CREATED,
+    response_model=UserView
+)
+async def add_user(user: User = Depends(create_user)):
+    return user
 
 
 @public_router.post("/login")
@@ -24,6 +35,6 @@ async def login(
     return response
 
 
-@private_router.post("/logout")
+@private_router.delete("/logout")
 async def logout():
     raise NotAuthenticated()

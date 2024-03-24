@@ -27,8 +27,8 @@ from core.settings import ALLOWED_ORIGIN
 
 app = FastAPI(
     exception_handlers={
-        IntegrityError: unique_violation_exception_handler,
-        Exception: common_exceptions_handler
+        Exception: common_exceptions_handler,
+        IntegrityError: unique_violation_exception_handler
     }
 )
 
@@ -44,7 +44,10 @@ app.add_middleware(
     backend=JWTAuthenticationBackend(CookiesRepo())
 )
 app.add_middleware(DBSessionMiddleware)
-app.add_middleware(ExceptionMiddleware, handlers=app.exception_handlers)
+app.add_middleware(
+    ExceptionMiddleware,
+    handlers=app.exception_handlers
+)
 
 app.include_router(networks_private_router)
 app.include_router(users_private_router)

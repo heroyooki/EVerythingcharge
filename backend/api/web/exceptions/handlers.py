@@ -4,14 +4,13 @@ from traceback import format_exc
 from fastapi import Request
 from loguru import logger
 from propan import apply_types, Depends
-from sqlalchemy.exc import IntegrityError
 from starlette import status
 from starlette.responses import JSONResponse
 
 from core.utils import get_settings
 
 
-async def unique_violation_exception_handler(request: Request, exc: IntegrityError):
+async def unique_violation_exception_handler(request: Request, exc):
     pattern = re.compile(r"Key \((.*?)\)=\((.*?)\) (.*)")
     name, value, reason = pattern.search(exc.args[0]).groups()
     return JSONResponse(

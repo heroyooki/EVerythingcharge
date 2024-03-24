@@ -14,11 +14,7 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
             async with get_contextual_session() as session:
                 with context.scope("session", session):
                     response = await call_next(request)
-                    try:
-                        await session.commit()
-                    except Exception as e:
-                        await session.rollback()
-                        raise e
+                    await session.commit()
                     return response
 
         return await with_session_scope()

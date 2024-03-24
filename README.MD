@@ -46,9 +46,7 @@ Deployment
 - Make sure that the `RABBITMQ_HOST` refers to the host with running `api`.
 - ```$ sh run.sh -s worker```
 
-### Create user:
-
-- ```docker exec -it EVapi python api/cli/create_user.py -m {email} -p {password} -f {first name} -l {last_name}```
+### API documentation is available on the `http://{your_host}:8000/docs`
 
 Currenlty implemented scenarios.
 --------
