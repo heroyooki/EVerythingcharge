@@ -1,7 +1,7 @@
 from typing import Union, Optional
 
-from ocpp.v16.enums import ChargePointStatus
-from ocpp.v201.enums import ConnectorStatusType
+from ocpp.v16.enums import ChargePointStatus, ChargePointErrorCode
+from ocpp.v201.enums import ConnectorStatusType, StatusInfoReasonType
 from pydantic import BaseModel, field_validator, Field
 
 
@@ -35,3 +35,11 @@ class CreateChargPointPayloadView(BaseModel):
     def validate_version(cls, value):
         assert value in ["1.6", "2.0.1"], "Only versions 1.6 and 2.0.1 are supported"
         return value
+
+
+class UpdateChargePointPayloadView(BaseModel):
+    model: Union[str, None] = None
+    vendor: Union[str, None] = None
+    status: Union[ChargePointStatus, ConnectorStatusType, None] = None
+    error_code: Union[ChargePointErrorCode, StatusInfoReasonType] = None
+    evse_id: Union[int, None] = None

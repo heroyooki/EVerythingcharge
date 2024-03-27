@@ -7,6 +7,7 @@ from ocpp.v16.enums import Action, RegistrationStatus
 from propan import apply_types, Depends
 
 from api.web.charge_points import get_charge_point_service
+from api.web.charge_points.views import UpdateChargePointPayloadView
 from core.utils import get_formatted_utc, get_settings
 
 
@@ -15,7 +16,7 @@ class BootNotificationScenario:
     @apply_types
     @on(Action.BootNotification)
     async def on_boot_notification(
-            this,
+            self_,
             utc_datetime: str = Depends(get_formatted_utc),
             charge_point_vendor=Depends(lambda charge_point_vendor: charge_point_vendor),
             charge_point_model=Depends(lambda charge_point_model: charge_point_model),
@@ -29,12 +30,13 @@ class BootNotificationScenario:
             f"charge_point_model={charge_point_model}, "
             f"kwargs={kwargs})"
         )
+        payload = UpdateChargePointPayloadView(
+            model=charge_point_model,
+            vendor=charge_point_vendor
+        )
         await service.update_charge_point(
-            charge_point_id=this.id,
-            payload=dict(
-                vendor=charge_point_vendor,
-                model=charge_point_model,
-            )
+            charge_point_id=self_.id,
+            payload=payload.dict()
         )
         return call_result.BootNotificationPayload(
             current_time=utc_datetime,

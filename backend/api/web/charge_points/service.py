@@ -4,8 +4,9 @@ from ocpp.v16.enums import ChargePointStatus
 from ocpp.v201.enums import ConnectorStatusType
 from propan import apply_types, Context
 from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 
-from api.web.charge_points.models import ChargePoint
+from api.web.charge_points.models import ChargePoint, Connector
 from api.web.charge_points.views import CreateChargPointPayloadView
 from api.web.exceptions import NotFound
 
@@ -53,3 +54,31 @@ async def get_charge_point_or_404(charge_point_id) -> ChargePoint:
     if not charge_point:
         raise NotFound(detail=f"The charge point with id: '{charge_point_id}' has not found.")
     return charge_point
+
+
+@apply_types
+async def create_or_update_connector(
+        charge_point_id: str,
+        connector_id: int,
+        payload: Dict,
+        session=Context()
+):
+    """
+    I could not get why sqlalchemy's ''on_conflict_do_update'' is not working.
+    Let it be as is for now.
+    """
+    connector = Connector(
+        charge_point_id=charge_point_id,
+        id=connector_id,
+        **payload
+    )
+    session.add(connector)
+    try:
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        stmt = update(Connector) \
+            .where(Connector.charge_point_id == charge_point_id,
+                   Connector.id == connector_id) \
+            .values(**payload)
+        await session.execute(stmt)

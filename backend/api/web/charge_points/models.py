@@ -3,7 +3,7 @@ from __future__ import annotations
 from sqlalchemy import (
     Column,
     String,
-    ForeignKey
+    ForeignKey, Integer, UniqueConstraint, PrimaryKeyConstraint
 )
 from sqlalchemy.orm import relationship
 
@@ -21,9 +21,32 @@ class ChargePoint(Model):
     location = Column(String, nullable=True)
     model = Column(String, nullable=True)
     ocpp_version = Column(String, nullable=False)
+    error_code = Column(String, nullable=True)
+    evse_id = Column(Integer, nullable=True)
 
     network_id = Column(String, ForeignKey("networks.id"), nullable=False)
     network = relationship(Network, back_populates="charge_points", lazy="joined")
+    connectors = relationship("Connector",
+                              back_populates="charge_point",
+                              passive_deletes=True,
+                              lazy="joined",
+                              order_by="Connector.id")
 
     def __repr__(self):
         return f"ChargePoint (id={self.id}, status={self.status}, location={self.location})"
+
+
+class Connector(Model):
+    __tablename__ = "connectors"
+
+    __table_args__ = (
+        UniqueConstraint("id", "charge_point_id"),
+        PrimaryKeyConstraint("id", "charge_point_id")
+    )
+
+    id = Column(Integer, nullable=False)
+    status = Column(String, index=True, nullable=False)
+    error_code = Column(String, nullable=True)
+
+    charge_point_id = Column(String, ForeignKey("charge_points.id", ondelete='CASCADE'), nullable=False)
+    charge_point = relationship("ChargePoint", back_populates="connectors", lazy="joined")
