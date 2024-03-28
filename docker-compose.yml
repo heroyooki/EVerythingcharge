@@ -1,6 +1,36 @@
 version: "2.2"
 
 services:
+
+  everythingcharge-frontend:
+    container_name: everythingcharge-frontend
+    restart: always
+    image: node:18.17-bullseye
+    volumes:
+      - ./frontend:/ocpp/frontend
+    ports:
+      - "${UI_SERVER_PORT}:${UI_SERVER_PORT}"
+    networks:
+      - app-network
+    command: >
+      sh -c "cd /ocpp/frontend &&
+             yarn install && 
+             yarn dev --port ${UI_SERVER_PORT} --host 0.0.0.0"
+    depends_on:
+      everythingcharge-api:
+        condition: service_healthy
+
+  everythingcharge-nginx:
+    image: nginx:1.24.0-bullseye
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - everythingcharge-frontend
+    networks:
+      - app-network
+
   everythingcharge-rabbitmq:
     image: rabbitmq:3.12.0-management
     restart: always
