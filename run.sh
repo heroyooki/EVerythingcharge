@@ -44,7 +44,7 @@ set_origin() {
         read -p "Enter a value for ALLOWED_ORIGIN: " input_value
         export "$ALLOWED_ORIGIN"="$input_value"
     else
-        echo "Value for environment variable ALLOWED_ORIGIN is already set: $ALLOWED_ORIGIN"
+        echo "Value for environment variable ALLOWED_ORIGIN is already set as '$ALLOWED_ORIGIN'"
         read -p "Are you sure you want to keep the current value? (y/n): " confirmation
         if [ "$confirmation" = "y" ]; then
             echo "Keeping the current value: $ALLOWED_ORIGIN"
