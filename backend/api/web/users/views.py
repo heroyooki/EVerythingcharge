@@ -1,3 +1,5 @@
+from typing import List, Any
+
 from pydantic import BaseModel
 
 
@@ -6,6 +8,7 @@ class UserView(BaseModel):
     email: str
     first_name: str
     last_name: str
+    networks: List[Any] = []
 
 
 class CreateUserPayloadView(BaseModel):

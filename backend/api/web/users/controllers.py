@@ -1,6 +1,6 @@
 import http
 
-from fastapi import Response, Depends
+from fastapi import Response, Depends, Request
 
 from api.web.exceptions import NotAuthenticated
 from api.web.routing import PublicAPIRouter, PrivateAPIRouter
@@ -19,6 +19,15 @@ private_router = PrivateAPIRouter()
 )
 async def add_user(user: User = Depends(create_user)):
     return user
+
+
+@private_router.get(
+    "/me",
+    status_code=http.HTTPStatus.OK,
+    response_model=UserView
+)
+async def receive_current_user(request: Request):
+    return request.user
 
 
 @public_router.post("/login")
