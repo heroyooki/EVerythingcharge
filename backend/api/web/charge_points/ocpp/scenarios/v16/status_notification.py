@@ -26,7 +26,8 @@ class StatusNotificationScenario:
             f"Accepted '{Action.StatusNotification}' "
             f"(connector_id={connector_id}, "
             f"error_code={error_code}, "
-            f"status={status}"
+            f"status={status}, "
+            f"charge_point_id={self_.id}, "
             f"kwargs={kwargs})"
         )
 

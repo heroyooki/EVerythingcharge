@@ -27,8 +27,9 @@ class StatusNotificationScenario:
             f"Accepted '{Action.StatusNotification}' "
             f"(connector_id={connector_id}, "
             f"connector_status={connector_status}, "
-            f"custom_data={custom_data}"
-            f"timestamp={timestamp}"
+            f"custom_data={custom_data}, "
+            f"timestamp={timestamp}, "
+            f"charge_point_id={self_.id}, "
             f"evse_id={evse_id})"
         )
         payload = UpdateChargePointPayloadView(

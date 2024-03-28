@@ -28,6 +28,7 @@ class BootNotificationScenario:
             f"Accepted '{Action.BootNotification}' "
             f"(charge_point_vendor={charge_point_vendor}, "
             f"charge_point_model={charge_point_model}, "
+            f"charge_point_id={self_.id}, "
             f"kwargs={kwargs})"
         )
         payload = UpdateChargePointPayloadView(
