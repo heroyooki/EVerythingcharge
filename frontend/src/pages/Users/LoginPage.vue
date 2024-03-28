@@ -1,7 +1,7 @@
 <template>
   <v-form v-model="isValid">
     <v-container>
-      <div align="center" class="mt-16 text-h5 font-weight-light">
+      <div align="center" class="text-h5 font-weight-light">
         OCPP Management System
       </div>
 
@@ -19,7 +19,6 @@
                     v-model="data.email"
                     density="compact"
                     variant="underlined"
-                    validate-on="lazy"
                     @input="clearError"
                   ></v-text-field>
                 </v-col>
@@ -31,7 +30,6 @@
                     v-model="data.password"
                     density="compact"
                     variant="underlined"
-                    validate-on="lazy"
                     @input="clearError"
                   ></v-text-field>
                 </v-col>

@@ -1,5 +1,5 @@
 <template>
-  <v-layout class="rounded rounded-md">
+  <v-layout class="h-auto">
     <v-app-bar class="px-3" flat density="compact">
       <v-row justify="end">
       </v-row>
@@ -60,8 +60,8 @@
       ></v-progress-linear>
       <v-container>
         <v-row>
-          <v-col cols="12" md="9">
-            <v-sheet height="90vh" rounded="lg" class="elevation-4">
+          <v-col md="8">
+            <v-sheet class="elevation-4 h-screen">
               <router-view></router-view>
             </v-sheet>
           </v-col>
@@ -94,6 +94,6 @@ onMounted(() => {
 <style scoped>
 .logout {
   position: absolute;
-  bottom: 30px;
+  bottom: 2%;
 }
 </style>
