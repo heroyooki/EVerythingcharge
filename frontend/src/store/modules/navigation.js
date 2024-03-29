@@ -1,6 +1,8 @@
+import {menuItems} from "@/menu/app-menu-items";
+
 const getDefaultState = () => {
   return {
-    pageMenuItems: [],
+    pageMenuItems: menuItems,
     prevPage: "",
     pageHasBackButton: false,
   };
@@ -12,15 +14,15 @@ export default {
   name: "navigation",
   state,
   actions: {
-    storeMenuItems({ commit }, menuItems) {
+    storeMenuItems({commit}, menuItems) {
       commit("setPageMenuItems", menuItems);
     },
 
-    storePrevPage({ commit }, url) {
+    storePrevPage({commit}, url) {
       commit("setPrevPage", url);
     },
 
-    storePageHasBackButton({ commit }, flag) {
+    storePageHasBackButton({commit}, flag) {
       commit("setPageHasBackButton", flag);
     },
   },

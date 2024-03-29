@@ -12,7 +12,7 @@
       @click="rail = false"
     >
       <v-list-item
-        prepend-icon="mdi mdi-land-plots-marker"
+        prepend-icon="mdi mdi-badge-account-outline"
         :title="getters.currentUser.first_name"
         nav
       >
@@ -25,19 +25,16 @@
         </template>
       </v-list-item>
 
-      <v-divider></v-divider>
 
-      <v-list density="compact" nav>
+      <v-list class="mt-5" density="compact" nav>
         <div v-for="(link, i) in getters.pageMenuItems" :key="i">
           <v-list-item
-            v-if="link.isVisible(getters)"
             :key="link.name"
             :to="link.getPath(getters)"
             :value="link.key"
             :title="link.name"
             :prepend-icon="link.icon"
             :active="isActive(link.key)"
-            :disabled="!link.isVisible(getters)"
           >
           </v-list-item>
         </div>
@@ -82,6 +79,10 @@ const {getters, commit} = useStore();
 
 const drawer = ref(true);
 const rail = ref(false);
+
+const isActive = (key) => {
+  return currentRoute.value.name === key;
+};
 
 onMounted(() => {
   const networkId = currentRoute.value.params?.networkId;

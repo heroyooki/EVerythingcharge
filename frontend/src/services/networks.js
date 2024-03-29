@@ -17,14 +17,3 @@ export function listNetworks(params) {
 export function getNetwork(networkId) {
   return request.get(`${endpoint}/${networkId}`);
 }
-
-export function getNetworkRates() {
-  return request.get(`${endpoint}/${currentRoute.value.params.networkId}/rates`);
-}
-
-export function saveSettings(data) {
-  return request.post(
-    `${endpoint}/${currentRoute.value.params.networkId}/settings`,
-    data
-  );
-}

@@ -26,11 +26,41 @@ const routes = [
     beforeEnter: AuthGuard,
     children: [
       {
-        path: "",
+        path: ":networkId",
         name: "Dashboard",
         component: () =>
           import(
             /* webpackChunkName: "home" */ "@/pages/DashboardPage.vue"
+            ),
+      }
+    ],
+  },
+  {
+    path: "/",
+    component: () => import("@/layouts/AppLayout.vue"),
+    beforeEnter: AuthGuard,
+    children: [
+      {
+        path: ":networkId/stations",
+        name: "Stations",
+        component: () =>
+          import(
+            /* webpackChunkName: "home" */ "@/pages/Stations/ListStationsPage.vue"
+            ),
+      }
+    ],
+  },
+  {
+    path: "/",
+    component: () => import("@/layouts/AppLayout.vue"),
+    beforeEnter: AuthGuard,
+    children: [
+      {
+        path: ":networkId/transactions",
+        name: "Transactions",
+        component: () =>
+          import(
+            /* webpackChunkName: "home" */ "@/pages/ListTransactionsPage.vue"
             ),
       }
     ],

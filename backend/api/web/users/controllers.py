@@ -1,8 +1,11 @@
 import http
+from typing import List
 
 from fastapi import Response, Depends, Request
 
 from api.web.exceptions import NotAuthenticated
+from api.web.networks.models import Network
+from api.web.networks.service import get_networks
 from api.web.routing import PublicAPIRouter, PrivateAPIRouter
 from api.web.users.models import User
 from api.web.users.service import AnnotatedUser, Password, PasswdContext, create_user
@@ -26,8 +29,13 @@ async def add_user(user: User = Depends(create_user)):
     status_code=http.HTTPStatus.OK,
     response_model=UserView
 )
-async def receive_current_user(request: Request):
-    return request.user
+async def receive_current_user(
+        request: Request,
+        networks: List[Network] = Depends(get_networks)
+):
+    view = UserView.from_orm(request.user)
+    view.networks = networks
+    return view
 
 
 @public_router.post("/login")

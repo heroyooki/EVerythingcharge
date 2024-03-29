@@ -50,11 +50,11 @@ export default {
       request.delete("/logout");
     },
 
-    login({commit}, credentials) {
+    login({commit, getters}, credentials) {
       return request.post("/login", credentials).then(() => {
         this.dispatch("getUser").then(() => {
           commit("setAuthorized");
-          router.push("/");
+          router.push(`/${getters.currentNetwork?.id}`);
         })
       });
     },
