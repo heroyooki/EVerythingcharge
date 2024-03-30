@@ -1,12 +1,19 @@
-import { reactive, ref } from "vue";
+import {ref, watch} from "vue";
 
-export function useSubmitForm({ itemSender, afterHandler }) {
+export function useSubmitForm({itemSender}) {
   const loading = ref(false);
   const isValid = ref(false);
   const dialog = ref(false);
-  const data = reactive({});
+  const data = ref({});
   const errors = ref({});
   const showError = ref(false);
+
+  watch(dialog, () => {
+    if (!dialog.value) {
+      data.value = {};
+      clearError();
+    }
+  })
 
   const clearError = () => {
     showError.value = false;
@@ -19,21 +26,15 @@ export function useSubmitForm({ itemSender, afterHandler }) {
 
   const closeModal = () => {
     dialog.value = false;
-    data.value = null;
-    clearError();
   };
 
   const sendData = () => {
     loading.value = true;
-    itemSender(data)
-      .then((response) => {
-        afterHandler(response);
-        closeModal();
-      })
-      .catch(({ response }) => {
-        const { data } = response;
+    itemSender(data.value)
+      .then(() => closeModal())
+      .catch(({response}) => {
         showError.value = true;
-        errors.value[data.key] = data.detail;
+        errors.value[response?.data?.key] = response?.data?.detail;
       })
       .finally(() => {
         loading.value = false;

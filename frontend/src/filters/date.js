@@ -1,5 +1,5 @@
 import moment from "moment";
-import { DATETIME_FORMAT } from "@/components/enums";
+import {DATETIME_FORMAT} from "@/enums";
 
 function dateAgo(value) {
   if (value) {
@@ -17,4 +17,4 @@ function date(value, format = DATETIME_FORMAT) {
   return "–";
 }
 
-export { date, dateAgo };
+export {date, dateAgo};

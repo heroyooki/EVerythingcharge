@@ -15,7 +15,7 @@ export function deleteStation(stationId) {
 
 export function addStation(data) {
   return request.post(
-    `/${currentRoute.value.params.networkId}/${endpoint}/`,
+    `/${currentRoute.value.params.networkId}/${endpoint}`,
     data
   );
 }

@@ -11,12 +11,12 @@ from api.web.users.views import LoginPayloadView, CreateUserPayloadView
 _password_context: CryptContext | None = None
 
 
-def get_email(data: Union[LoginPayloadView, str]):
-    return getattr(data, "email", data)
+def get_email(body: Union[LoginPayloadView, str]):
+    return getattr(body, "email", body)
 
 
-def get_password(data: Union[LoginPayloadView, str]):
-    return getattr(data, "password", data)
+def get_password(body: Union[LoginPayloadView, str]):
+    return getattr(body, "password", body)
 
 
 Email = Annotated[Union[LoginPayloadView, str], Depends(get_email)]
@@ -31,11 +31,11 @@ def get_password_context() -> CryptContext:
 
 @apply_types
 async def create_user(
-        data: CreateUserPayloadView,
+        body: CreateUserPayloadView,
         session=Context(),
 ):
-    data.password = get_password_context().hash(data.password)
-    user = User(**data.dict())
+    body.password = get_password_context().hash(body.password)
+    user = User(**body.dict())
     session.add(user)
     await session.flush()
     return user

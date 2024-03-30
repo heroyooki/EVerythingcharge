@@ -6,9 +6,11 @@ from fastapi import HTTPException
 
 
 class NotAuthenticated(HTTPException):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, key=None, **kwargs):
         super().__init__(
             status_code=HTTPStatus.UNAUTHORIZED,
             *args,
             **kwargs
         )
+        self.key = key
+

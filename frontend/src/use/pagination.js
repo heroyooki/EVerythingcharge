@@ -1,18 +1,17 @@
-import { ref, watch } from "vue";
-import { useStore } from "vuex";
-import { rules } from "@/configs/validation";
+import {ref, watch} from "vue";
+import {useStore} from "vuex";
 
-export function usePagination({ itemsLoader, afterHandler }) {
+export function usePagination({itemsLoader}) {
   const currentPage = ref(1);
   const lastPage = ref(0);
   const items = ref([]);
   const search = ref("");
-  const { commit } = useStore();
+  const {commit} = useStore();
   let timeout = null;
 
   const fetchData = (args) => {
     let query = Object.assign(
-      { page: currentPage.value, search: search.value },
+      {page: currentPage.value, search: search.value},
       args || {}
     );
     if (!query.periodic) {
@@ -25,9 +24,6 @@ export function usePagination({ itemsLoader, afterHandler }) {
         }
         items.value = response.items;
         lastPage.value = response.pagination.last_page;
-        if (afterHandler !== undefined) {
-          afterHandler(response.items);
-        }
       })
       .finally(() => {
         commit("unsetGlobalLoading");
@@ -39,12 +35,12 @@ export function usePagination({ itemsLoader, afterHandler }) {
     let newValueLength = newValue.trim().length;
     let oldValueLength = oldValue.trim().length;
     if (
-      newValueLength >= rules.minLength ||
+      newValueLength >= 3 ||
       (!newValueLength && oldValueLength)
     ) {
       clearTimeout(timeout);
       timeout = setTimeout(fetchData, 500, newValue);
     }
   });
-  return { currentPage, lastPage, fetchData, items, search };
+  return {currentPage, lastPage, fetchData, items, search};
 }

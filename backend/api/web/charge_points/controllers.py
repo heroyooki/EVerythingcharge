@@ -11,7 +11,7 @@ router = PrivateAPIRouter(prefix="/{network_id}/charge_points")
 
 
 @router.post(
-    "/",
+    "",
     status_code=status.HTTP_201_CREATED,
     response_model=SingleChargePointView
 )

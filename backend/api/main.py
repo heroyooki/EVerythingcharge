@@ -13,9 +13,18 @@ from api.connections import init_global_scope
 from api.repositories.web import CookiesRepo
 from api.web.auth.backends.jwt import JWTAuthenticationBackend
 from api.web.auth.middlewares.jwt import JWTAuthenticationMiddleware
-from api.web.charge_points.controllers import router as charge_points_router
-from api.web.exceptions.handlers import unique_violation_exception_handler, common_exceptions_handler
-from api.web.networks.controllers import private_router as networks_private_router
+from api.web.charge_points.controllers import (
+    router as charge_points_router
+)
+from api.web.exceptions import NotAuthenticated
+from api.web.exceptions.handlers import (
+    unique_violation_exception_handler,
+    unexpected_exceptions_handler,
+    format_custom_exception
+)
+from api.web.networks.controllers import (
+    private_router as networks_private_router
+)
 from api.web.users.controllers import (
     public_router as users_public_router,
     private_router as users_private_router
@@ -27,8 +36,9 @@ from core.settings import ALLOWED_ORIGIN
 
 app = FastAPI(
     exception_handlers={
-        Exception: common_exceptions_handler,
-        IntegrityError: unique_violation_exception_handler
+        IntegrityError: unique_violation_exception_handler,
+        NotAuthenticated: format_custom_exception,
+        Exception: unexpected_exceptions_handler
     }
 )
 

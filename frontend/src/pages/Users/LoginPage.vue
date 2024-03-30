@@ -11,27 +11,20 @@
             <v-container>
               <v-row>
                 <v-col cols="12" class="mt-10">
-                  <v-text-field
-                    :error="showError"
-                    :error-messages="errors.email"
-                    label="Login"
-                    required
+                  <email-input
+                    :isErrorVisible="showError && errors.hasOwnProperty('email')"
+                    :errorMessage="errors.email"
+                    :cleaner="clearError"
                     v-model="data.email"
-                    density="compact"
-                    variant="underlined"
-                    @input="clearError"
-                  ></v-text-field>
+                  ></email-input>
                 </v-col>
                 <v-col cols="12">
-                  <v-text-field
-                    type="password"
-                    label="Password"
-                    required
+                  <password-input
+                    :isErrorVisible="showError && errors.hasOwnProperty('password')"
+                    :errorMessage="errors.password"
+                    :cleaner="clearError"
                     v-model="data.password"
-                    density="compact"
-                    variant="underlined"
-                    @input="clearError"
-                  ></v-text-field>
+                  ></password-input>
                 </v-col>
               </v-row>
             </v-container>
@@ -39,9 +32,8 @@
           <v-card-actions class="mb-7">
             <v-spacer></v-spacer>
             <v-btn
-              color="blue-darken-1"
-              variant="text"
-              @click="onSubmit"
+              :color="ELEMENT_COLOR.button"
+              @click="sendData"
               :loading="loading"
               :disabled="!isValid"
             >
@@ -54,29 +46,21 @@
   </v-form>
 </template>
 <script setup>
-import {ref} from "vue";
 import store from "@/store";
+import {useSubmitForm} from "@/use/form";
+import EmailInput from "@/components/forms/EmailInput.vue";
+import PasswordInput from "@/components/forms/PasswordInput";
+import {ELEMENT_COLOR} from "@/enums";
 
-const loading = ref(false);
-const isValid = ref(false);
-const data = ref({});
-const errors = ref({});
-const showError = ref(false);
-
-const onSubmit = () => {
-  loading.value = true;
-  store
-    .dispatch("login", data.value)
-    .catch(({response}) => {
-      errors.value.email = response?.data?.detail;
-    })
-    .finally(() => {
-      loading.value = false;
-    });
-};
-
-const clearError = () => {
-  showError.value = false;
-  errors.value = {};
-};
+const {
+  loading,
+  isValid,
+  data,
+  errors,
+  showError,
+  clearError,
+  sendData,
+} = useSubmitForm({
+  itemSender: data => store.dispatch("login", data)
+});
 </script>

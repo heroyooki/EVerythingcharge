@@ -1,16 +1,24 @@
 import re
 from traceback import format_exc
 
-from fastapi import Request
+from fastapi import Request, HTTPException
+from fastapi.responses import JSONResponse
 from loguru import logger
 from propan import apply_types, Depends
+from sqlalchemy.exc import IntegrityError
 from starlette import status
-from starlette.responses import JSONResponse
 
 from core.utils import get_settings
 
 
-async def unique_violation_exception_handler(request: Request, exc):
+async def format_custom_exception(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=dict(detail=exc.detail, key=getattr(exc, "key", None)),
+    )
+
+
+async def unique_violation_exception_handler(request: Request, exc: IntegrityError):
     pattern = re.compile(r"Key \((.*?)\)=\((.*?)\) (.*)")
     name, value, reason = pattern.search(exc.args[0]).groups()
     return JSONResponse(
@@ -20,7 +28,7 @@ async def unique_violation_exception_handler(request: Request, exc):
 
 
 @apply_types
-async def common_exceptions_handler(
+async def unexpected_exceptions_handler(
         request: Request,
         exc: Exception,
         settings=Depends(get_settings)

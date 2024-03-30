@@ -45,8 +45,10 @@ async def login(
         user: AnnotatedUser,
         passwd_context: PasswdContext,
 ):
-    if not user or not passwd_context.verify(password, user.password):
-        raise NotAuthenticated(detail="Invalid login or password")
+    if not user:
+        raise NotAuthenticated(detail="Unrecognized email.", key="email")
+    if not passwd_context.verify(password, user.password):
+        raise NotAuthenticated(detail="Invalid password.", key="password")
     response.headers["X-Authenticated"] = user.id
     response.status_code = http.HTTPStatus.ACCEPTED
     return response
