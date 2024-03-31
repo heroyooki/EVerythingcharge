@@ -57,7 +57,7 @@
       ></v-progress-linear>
       <v-container>
         <v-row>
-          <v-col md="8">
+          <v-col md="12">
             <v-sheet class="elevation-4 h-screen">
               <router-view></router-view>
             </v-sheet>
