@@ -1,8 +1,24 @@
 <template>
   <v-container>
-    <v-row>
-      <v-col sm="12">
-        <v-sheet>
+    <v-row align="end" no-gutters>
+      <v-col>
+        <v-sheet class="pa-2 ma-2">
+          <div class="text-center" v-if="paginate">
+            <v-pagination
+              v-if="items?.length"
+              :modelValue="currentPage"
+              @update:modelValue="updateCurrentPage"
+              :length="lastPage"
+              total-visible="6"
+              density="compact"
+            ></v-pagination>
+          </div>
+        </v-sheet>
+      </v-col>
+    </v-row>
+    <v-row align="start" no-gutters>
+      <v-col>
+        <v-sheet class="pa-2 ma-2">
           <v-card elevation="0">
             <v-card-title>
               <slot name="title" :title="title">
@@ -22,17 +38,6 @@
                 <slot :name="name" v-bind="slotProps || {}"></slot>
               </template>
             </v-data-table>
-            <div class="text-center mt-7" v-if="paginate">
-              <v-pagination
-                class="pagination"
-                v-if="items?.length"
-                :modelValue="currentPage"
-                @update:modelValue="updateCurrentPage"
-                :length="lastPage"
-                total-visible="6"
-                density="compact"
-              ></v-pagination>
-            </div>
           </v-card>
           <empty-data v-if="!items?.length && !getters.globalLoading"></empty-data>
         </v-sheet>
@@ -80,12 +85,5 @@ const onClickRow = (data, item) => {
 <style>
 .v-data-table-footer {
   display: none;
-}
-
-.pagination {
-  position: fixed;
-  bottom: 120px;
-  margin: auto;
-  width: 50%;
 }
 </style>

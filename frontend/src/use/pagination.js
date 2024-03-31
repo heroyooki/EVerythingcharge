@@ -9,14 +9,9 @@ export function usePagination({itemsLoader}) {
   const {commit} = useStore();
   let timeout = null;
 
-  const fetchData = (args) => {
-    let query = Object.assign(
-      {page: currentPage.value, search: search.value},
-      args || {}
-    );
-    if (!query.periodic) {
-      commit("setGlobalLoading");
-    }
+  const fetchData = () => {
+    let query = {page: currentPage.value, search: search.value}
+    commit("setGlobalLoading");
     return itemsLoader(query)
       .then((response) => {
         if (!response.items.length && currentPage.value > 1) {

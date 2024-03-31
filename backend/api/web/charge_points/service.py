@@ -1,14 +1,39 @@
-from typing import Dict
+from typing import Dict, List
 
 from ocpp.v16.enums import ChargePointStatus
 from ocpp.v201.enums import ConnectorStatusType
 from propan import apply_types, Context
-from sqlalchemy import select, update
+from sqlalchemy import select, update, or_, func, String
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.sql import selectable
 
 from api.web.charge_points.models import ChargePoint, Connector
 from api.web.charge_points.views import CreateChargPointPayloadView
 from api.web.exceptions import NotFound
+
+
+async def build_charge_points_query(
+        search: str | None = None,
+        extra_criterias: List | None = None
+) -> selectable:
+    criterias = [
+        ChargePoint.is_active.is_(True)
+    ]
+    if extra_criterias:
+        criterias.extend(extra_criterias)
+    query = select(ChargePoint)
+    for criteria in criterias:
+        query = query.where(criteria)
+    query = query.order_by(ChargePoint.updated_at.asc())
+    if search:
+        query = query.where(
+            or_(
+                func.lower(ChargePoint.id).contains(func.lower(search)),
+                func.cast(ChargePoint.status, String).ilike(f"{search}%"),
+                func.lower(ChargePoint.location).contains(func.lower(search)),
+            )
+        )
+    return query
 
 
 @apply_types

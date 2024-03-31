@@ -1,8 +1,11 @@
-from typing import Union, Optional
+from datetime import datetime
+from typing import Union, Optional, List
 
 from ocpp.v16.enums import ChargePointStatus, ChargePointErrorCode
 from ocpp.v201.enums import ConnectorStatusType, StatusInfoReasonType
 from pydantic import BaseModel, field_validator, Field
+
+from api.web.views import PaginationView
 
 
 class SingleChargePointView(BaseModel):
@@ -43,3 +46,19 @@ class UpdateChargePointPayloadView(BaseModel):
     status: Union[ChargePointStatus, ConnectorStatusType, None] = None
     error_code: Union[ChargePointErrorCode, StatusInfoReasonType] = None
     evse_id: Union[int, None] = None
+
+
+class SimpleChargePoint(BaseModel):
+    id: str
+    ocpp_version: str
+    status: Union[ChargePointStatus, ConnectorStatusType]
+    location: str | None = None
+    updated_at: datetime | None = None
+
+    class Config:
+        from_attributes = True
+
+
+class PaginatedChargePointsView(BaseModel):
+    items: List[SimpleChargePoint]
+    pagination: PaginationView

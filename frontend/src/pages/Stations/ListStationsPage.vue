@@ -57,7 +57,6 @@ const {commit, getters} = useStore();
 const {
   currentPage,
   lastPage,
-  fetchData,
   items,
   search
 } = usePagination({
@@ -70,14 +69,21 @@ const headers = [
     key: "id",
     align: "right",
     sortable: false,
-    width: "30%",
+    width: "20%",
+  },
+  {
+    title: "Version",
+    key: "ocpp_version",
+    align: "center",
+    sortable: false,
+    width: "5%",
   },
   {
     title: "Status",
     key: "status",
     align: "center",
     sortable: false,
-    width: "20%",
+    width: "10%",
   },
   {
     title: "Location",
@@ -89,7 +95,7 @@ const headers = [
   {
     title: "Last activity",
     key: "updated_at",
-    align: "right",
+    align: "center",
     sortable: false,
     value: (v) => dateAgo(v.updated_at),
     width: "15%",
