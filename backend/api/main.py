@@ -43,13 +43,6 @@ app = FastAPI(
 )
 
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[ALLOWED_ORIGIN],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-app.add_middleware(
     JWTAuthenticationMiddleware,
     backend=JWTAuthenticationBackend(CookiesRepo())
 )
@@ -57,6 +50,13 @@ app.add_middleware(DBSessionMiddleware)
 app.add_middleware(
     ExceptionMiddleware,
     handlers=app.exception_handlers
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[ALLOWED_ORIGIN],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(networks_private_router)

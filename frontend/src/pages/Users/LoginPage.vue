@@ -12,7 +12,7 @@
               <v-row>
                 <v-col cols="12" class="mt-10">
                   <email-input
-                    :isErrorVisible="showError && errors.hasOwnProperty('email')"
+                    :isErrorVisible="showError && !!errors.email"
                     :errorMessage="errors.email"
                     :cleaner="clearError"
                     v-model="data.email"
@@ -20,7 +20,7 @@
                 </v-col>
                 <v-col cols="12">
                   <password-input
-                    :isErrorVisible="showError && errors.hasOwnProperty('password')"
+                    :isErrorVisible="showError && !!errors.password"
                     :errorMessage="errors.password"
                     :cleaner="clearError"
                     v-model="data.password"

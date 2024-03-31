@@ -17,7 +17,7 @@
                   <v-col cols="12">
                     <text-input
                       :rules="validationRules.id"
-                      :isErrorVisible="showError && errors.id"
+                      :isErrorVisible="showError && !!errors.id"
                       :errorMessage="errors.id"
                       label="Id"
                       required
@@ -60,9 +60,7 @@
               >
                 Close
               </v-btn>
-              <!-- https://github.com/heroyooki/EVerythingcharge/issues/3 -->
               <v-btn
-                :disabled="true"
                 color="blue-darken-1"
                 variant="text"
                 @click="sendData"
