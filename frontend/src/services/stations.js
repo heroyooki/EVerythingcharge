@@ -25,7 +25,7 @@ export function listStations(queryParams) {
   return request.get(
     `/${
       currentRoute.value.params.networkId
-    }/${endpoint}/?${searchParams.toString()}`
+    }/${endpoint}?${searchParams.toString()}`
   );
 }
 

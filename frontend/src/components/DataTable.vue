@@ -3,9 +3,8 @@
     <v-row align="end" no-gutters>
       <v-col>
         <v-sheet class="pa-2 ma-2">
-          <div class="text-center" v-if="paginate">
+          <div class="text-center">
             <v-pagination
-              v-if="items?.length"
               :modelValue="currentPage"
               @update:modelValue="updateCurrentPage"
               :length="lastPage"
@@ -60,10 +59,6 @@ const rowConfig = {
 
 const props = defineProps({
   hover: {
-    type: Boolean,
-    default: true,
-  },
-  paginate: {
     type: Boolean,
     default: true,
   },
