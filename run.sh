@@ -38,19 +38,21 @@ while getopts ":s:" opt; do
     esac
 done
 
-set_origin() {
-    if [ -z "$ALLOWED_ORIGIN" ]; then
-        echo "Environment variable ALLOWED_ORIGIN is not set or empty."
-        read -p "Enter a value for ALLOWED_ORIGIN: " input_value
-        export "$ALLOWED_ORIGIN"="$input_value"
+ensure_env() {
+    local var_name="$1"
+    local var_value="${!var_name}"
+    if [ -z "$var_value" ]; then
+        echo "Environment variable $var_name is not set or empty."
+        read -p "Enter a value for $var_name: " input_value
+        export "$var_name"="$input_value"
     else
-        echo "Value for environment variable ALLOWED_ORIGIN is already set as '$ALLOWED_ORIGIN'"
+        echo "Value for environment variable $var_name is already set as '$var_value'"
         read -p "Are you sure you want to keep the current value? (y/n): " confirmation
         if [ "$confirmation" = "y" ]; then
-            echo "Keeping the current value: $ALLOWED_ORIGIN"
+            echo "Keeping the current value: $var_value"
         else
-            read -p "Enter a new value for ALLOWED_ORIGIN: " new_value
-            export "$ALLOWED_ORIGIN"="$new_value"
+            read -p "Enter a new value for $var_name: " new_value
+            export "$var_name"="$new_value"
         fi
     fi
 }
@@ -59,14 +61,14 @@ echo "VITE_API_URL=$ALLOWED_ORIGIN:$HTTP_SERVER_PORT" > frontend/.env.local
 
 
 if [ $api_flag -eq 1 ] && [ $worker_flag -eq 0 ]; then
-    set_origin
+    ensure_env "ALLOWED_ORIGIN"
     echo "\n >>> Build and run 'api' service ... \n"
     docker-compose up --build -d
     docker logs -f --tail 50 EVapi
 
 # This option is using to run the worker and api on the same server.
 elif [ $worker_flag -eq 1 ] && [ $api_flag -eq 1 ]; then
-    set_origin
+    ensure_env "ALLOWED_ORIGIN"
     echo "\n >>> Build and run 'api' and 'worker' services ... \n"
     docker-compose up --build -d
     inspect_output=$(docker inspect everythingcharge-rabbitmq)
@@ -83,6 +85,7 @@ elif [ $worker_flag -eq 1 ] && [ $api_flag -eq 1 ]; then
 
 # This option is using to run the worker on the different server.
 elif [ $worker_flag -eq 1 ] && [ $api_flag -eq 0 ]; then
+    ensure_env "RABBITMQ_HOST"
     echo "\n >>> Build and run 'worker' service ... \n"
     docker build -t everythingcharge-worker .
     docker run -it -d --env-file .env \
