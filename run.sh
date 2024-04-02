@@ -38,7 +38,7 @@ while getopts ":s:" opt; do
     esac
 done
 
-ensure_env() {
+ensure_backend_env() {
     local var_name="$1"
     local var_value="${!var_name}"
     if [ -z "$var_value" ]; then
@@ -57,19 +57,23 @@ ensure_env() {
     fi
 }
 
-echo "VITE_API_URL=$ALLOWED_ORIGIN:$HTTP_SERVER_PORT" > frontend/.env.local
-
+ensure_frontend_env() {
+    echo "VITE_API_URL=$ALLOWED_ORIGIN:$HTTP_SERVER_PORT" > frontend/.env.local
+}
 
 if [ $api_flag -eq 1 ] && [ $worker_flag -eq 0 ]; then
-    ensure_env "ALLOWED_ORIGIN"
+    ensure_backend_env "ALLOWED_ORIGIN"
+    ensure_frontend_env
     echo "\n >>> Build and run 'api' service ... \n"
     docker-compose up --build -d
     docker logs -f --tail 50 EVapi
 
 # This option is using to run the worker and api on the same server.
 elif [ $worker_flag -eq 1 ] && [ $api_flag -eq 1 ]; then
-    ensure_env "ALLOWED_ORIGIN"
+    ensure_backend_env "ALLOWED_ORIGIN"
+    ensure_frontend_env
     echo "\n >>> Build and run 'api' and 'worker' services ... \n"
+    echo "VITE_API_URL=$ALLOWED_ORIGIN:$HTTP_SERVER_PORT" > frontend/.env.local
     docker-compose up --build -d
     inspect_output=$(docker inspect everythingcharge-rabbitmq)
     ip_address=$(echo "$inspect_output" | jq -r '.[0].NetworkSettings.Networks."everythingcharge_app-network".IPAddress')
