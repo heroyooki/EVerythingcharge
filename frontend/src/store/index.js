@@ -4,6 +4,7 @@ import createPersistedState from "vuex-persistedstate";
 import auth from "@/store/modules/auth";
 import navigation from "@/store/modules/navigation";
 import networks from "@/store/modules/networks";
+import sse from "@/store/modules/sse";
 
 const getDefaultState = () => {
   return {
@@ -33,6 +34,7 @@ export default createStore({
     auth,
     navigation,
     networks,
+    sse
   },
   plugins: [
     createPersistedState({

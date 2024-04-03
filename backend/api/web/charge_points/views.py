@@ -59,6 +59,29 @@ class SimpleChargePoint(BaseModel):
         from_attributes = True
 
 
+class SimpleConnectorView(BaseModel):
+    id: int
+    status: Union[ChargePointStatus, ConnectorStatusType]
+    error_code: Union[ChargePointErrorCode, None] = None
+
+    class Config:
+        from_attributes = True
+
+
+class ChargePointView(BaseModel):
+    id: str
+    ocpp_version: str
+    description: str | None = None
+    status: Union[ChargePointStatus, ConnectorStatusType]
+    model: str | None = None
+    vendor: str | None = None
+    updated_at: datetime | None = None
+    connectors: List[SimpleConnectorView] = []
+
+    class Config:
+        from_attributes = True
+
+
 class PaginatedChargePointsView(BaseModel):
     items: List[SimpleChargePoint]
     pagination: PaginationView

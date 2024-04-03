@@ -14,6 +14,7 @@ from api.repositories.web import CookiesRepo
 from api.web.auth.backends.jwt import JWTAuthenticationBackend
 from api.web.auth.middlewares.jwt import JWTAuthenticationMiddleware
 from api.web.charge_points.controllers import (
+    stream_router,
     router as charge_points_router
 )
 from api.web.exceptions import NotAuthenticated
@@ -63,6 +64,7 @@ app.include_router(networks_private_router)
 app.include_router(users_private_router)
 app.include_router(users_public_router)
 app.include_router(charge_points_router)
+app.include_router(stream_router)
 
 
 @app.on_event("startup")

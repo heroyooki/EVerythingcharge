@@ -40,6 +40,7 @@
 </template>
 
 <script setup>
+import {onMounted, onUnmounted} from "vue";
 import {useStore} from "vuex";
 import {dateAgo} from "@/filters/date";
 import DataTable from "@/components/DataTable";
@@ -49,10 +50,22 @@ import ColoredValue from "@/components/ColoredValue";
 
 import {STATION_STATUS_COLOR} from "@/enums";
 import {usePagination} from "@/use/pagination";
-import {addStation, listStations} from "@/services/stations";
+import {addStation, listStations, streamEndpoint} from "@/services/stations";
 import SubmitForm from "@/pages/Stations/components/SubmitForm";
 
-const {commit, getters} = useStore();
+const {commit, getters, dispatch} = useStore();
+
+
+onMounted(() => {
+  dispatch("watchSSE", {
+    endpoint: `${getters.currentNetwork.id}/${streamEndpoint}`,
+    handler: (data) => items.value = [data, ...items.value.filter(item => item.id !== data.id)]
+  });
+})
+
+onUnmounted(() => {
+  dispatch("closeSSE");
+})
 
 const {
   currentPage,

@@ -8,6 +8,7 @@ from propan import apply_types, Depends
 
 from api.web.charge_points import get_charge_point_service
 from api.web.charge_points.views import UpdateChargePointPayloadView
+from api.web.sse import get_sse_publisher
 
 
 class StatusNotificationScenario:
@@ -18,6 +19,7 @@ class StatusNotificationScenario:
             self_,
             connector_id: int = Depends(lambda connector_id: connector_id),
             error_code: ChargePointErrorCode = Depends(lambda error_code: error_code),
+            sse_publisher: Any = Depends(get_sse_publisher),
             status: ChargePointStatus = Depends(lambda status: status),
             service: Any = Depends(get_charge_point_service),
             **kwargs
@@ -46,4 +48,7 @@ class StatusNotificationScenario:
                 connector_id=connector_id,
                 payload=payload.dict(exclude_unset=True)
             )
+
+        await sse_publisher.simple_charge_point_publisher.publish(self_.id)
+
         return call_result.StatusNotificationPayload()

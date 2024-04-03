@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Any
 
 from ocpp.v16.enums import ChargePointStatus
 from ocpp.v201.enums import ConnectorStatusType
@@ -57,28 +57,14 @@ async def update_charge_point(
         charge_point_id: str,
         payload: Dict,
         session=Context()
-):
-    await session.execute(
-        update(ChargePoint) \
-            .where(ChargePoint.id == charge_point_id) \
-            .values(**payload)
-    )
-
-
-@apply_types
-async def get_charge_point(charge_point_id: str, session=Context()) -> ChargePoint | None:
-    query = select(ChargePoint).where(ChargePoint.id == charge_point_id)
-    result = await session.execute(query)
-    charge_point = result.scalars().first()
-    return charge_point
-
-
-@apply_types
-async def get_charge_point_or_404(charge_point_id) -> ChargePoint:
-    charge_point = await get_charge_point(charge_point_id)
-    if not charge_point:
-        raise NotFound(detail=f"The charge point with id: '{charge_point_id}' has not found.")
-    return charge_point
+) -> Any:
+    stmt = update(ChargePoint) \
+        .where(ChargePoint.id == charge_point_id) \
+        .values(**payload) \
+        .returning(ChargePoint)
+    scalar_result = await session.scalars(stmt)
+    results = scalar_result.unique()
+    return results.first()
 
 
 @apply_types
@@ -107,3 +93,22 @@ async def create_or_update_connector(
                    Connector.id == connector_id) \
             .values(**payload)
         await session.execute(stmt)
+
+
+@apply_types
+async def get_charge_point(
+        charge_point_id: str,
+        session=Context()
+) -> ChargePoint | None:
+    query = select(ChargePoint).where(ChargePoint.id == charge_point_id)
+    result = await session.execute(query)
+    charge_point = result.scalars().first()
+    return charge_point
+
+
+@apply_types
+async def get_charge_point_or_404(charge_point_id) -> ChargePoint:
+    charge_point = await get_charge_point(charge_point_id)
+    if not charge_point:
+        raise NotFound(detail=f"The charge point with id: '{charge_point_id}' has not found.")
+    return charge_point

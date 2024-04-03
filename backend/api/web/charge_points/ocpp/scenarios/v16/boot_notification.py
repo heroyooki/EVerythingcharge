@@ -37,7 +37,7 @@ class BootNotificationScenario:
         )
         await service.update_charge_point(
             charge_point_id=self_.id,
-            payload=payload.dict()
+            payload=payload.dict(exclude_unset=True)
         )
         return call_result.BootNotificationPayload(
             current_time=utc_datetime,

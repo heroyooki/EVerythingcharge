@@ -6,6 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL.trim("/");
 const {currentRoute} = router;
 
 const endpoint = "charge_points";
+export const streamEndpoint = `${endpoint}/stream`;
 
 export function deleteStation(stationId) {
   return request.delete(
