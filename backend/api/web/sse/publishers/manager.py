@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from api.web.charge_points import service
-from api.web.sse.publishers.charge_points import SimpleChargePointPublisher, DetailedChargePointPublisher
+from api.web.sse.publishers.charge_points import ChargePointPublisher
 
 
 class PublishingManager:
-    simple_charge_point_publisher = SimpleChargePointPublisher(service)
-    detailed_charge_point_publisher = DetailedChargePointPublisher(service)
+    charge_point_publisher = ChargePointPublisher(service)

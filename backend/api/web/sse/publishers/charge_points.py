@@ -1,40 +1,34 @@
 from __future__ import annotations
 
-from typing import Union
+from propan import apply_types, Context
 
 from api.web.charge_points.models import ChargePoint
-from api.web.charge_points.views import SimpleChargePoint, ChargePointView
+from api.web.charge_points.views import ChargePointView
 from api.web.sse.publishers.base import Publisher
-from core.models import get_contextual_session
 
 
 class ChargePointPublisher(Publisher):
+    view = ChargePointView
 
-    async def publish(self, identity: Union[str, ChargePoint]):
+    @apply_types
+    async def publish(
+            self_,
+            charge_point: ChargePoint,
+            session=Context()
+    ):
         """
         Publish new event for all observers in the list
         :param func:
         :return:
         """
-        async with get_contextual_session() as session:
-            if isinstance(identity, str):
-                charge_point = await self.service.get_charge_point(identity, session=session)
-            if isinstance(identity, ChargePoint):
-                charge_point = identity
-            for key in self.observers.keys():
-                if self.observers[key].network_id == charge_point.network_id:
-                    await self.notify_observer(
-                        key,
-                        {
-                            "event": "message",
-                            "data": self.view.from_orm(charge_point).json()
-                        }
-                    )
+        await session.refresh(charge_point)
 
-
-class SimpleChargePointPublisher(ChargePointPublisher):
-    view = SimpleChargePoint
-
-
-class DetailedChargePointPublisher(ChargePointPublisher):
-    view = ChargePointView
+        for key in self_.observers.keys():
+            if self_.observers[key].network_id == charge_point.network_id:
+                await self_.notify_observer(
+                    key,
+                    {
+                        "event": "message",
+                        "data": self_.view.from_orm(charge_point).json()
+                    }
+                )

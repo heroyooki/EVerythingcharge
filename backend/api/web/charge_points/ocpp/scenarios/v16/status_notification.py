@@ -4,6 +4,7 @@ from loguru import logger
 from ocpp.routing import on
 from ocpp.v16 import call_result
 from ocpp.v16.enums import Action, ChargePointErrorCode, ChargePointStatus
+from propan import Context
 from propan import apply_types, Depends
 
 from api.web.charge_points import get_charge_point_service
@@ -22,6 +23,7 @@ class StatusNotificationScenario:
             sse_publisher: Any = Depends(get_sse_publisher),
             status: ChargePointStatus = Depends(lambda status: status),
             service: Any = Depends(get_charge_point_service),
+            session=Context(),
             **kwargs
     ):
         logger.info(
@@ -49,6 +51,7 @@ class StatusNotificationScenario:
                 payload=payload.dict(exclude_unset=True)
             )
 
-        await sse_publisher.simple_charge_point_publisher.publish(self_.id)
+        await session.commit()
+        await sse_publisher.charge_point_publisher.publish(self_.charge_point)
 
         return call_result.StatusNotificationPayload()
