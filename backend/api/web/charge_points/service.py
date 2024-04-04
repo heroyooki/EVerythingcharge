@@ -24,7 +24,7 @@ async def build_charge_points_query(
     query = select(ChargePoint)
     for criteria in criterias:
         query = query.where(criteria)
-    query = query.order_by(ChargePoint.updated_at.asc())
+    query = query.order_by(ChargePoint.status.asc())
     if search:
         query = query.where(
             or_(
