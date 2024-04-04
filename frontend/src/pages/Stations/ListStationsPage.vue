@@ -40,6 +40,7 @@
 </template>
 
 <script setup>
+import {onMounted, onUnmounted} from "vue";
 import {useStore} from "vuex";
 import {dateAgo} from "@/filters/date";
 import DataTable from "@/components/DataTable";
@@ -49,6 +50,7 @@ import ColoredValue from "@/components/ColoredValue";
 
 import {STATION_STATUS_COLOR} from "@/enums";
 import {usePagination} from "@/use/pagination";
+import {useInterval} from "@/use/interval";
 import {addStation, listStations} from "@/services/stations";
 import SubmitForm from "@/pages/Stations/components/SubmitForm";
 
@@ -62,6 +64,16 @@ const {
   fetchData
 } = usePagination({
   itemsLoader: listStations,
+});
+
+const {fetchWithInterval, dropInterval} = useInterval();
+
+onMounted(() => {
+  fetchWithInterval(fetchData)
+});
+
+onUnmounted(() => {
+  dropInterval();
 });
 
 const headers = [

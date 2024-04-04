@@ -1,14 +1,12 @@
 from typing import Dict, List, Any
 
-from ocpp.v16.enums import ChargePointStatus
-from ocpp.v201.enums import ConnectorStatusType
 from propan import apply_types, Context
 from sqlalchemy import select, update, or_, func, String
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import selectable
 
 from api.web.charge_points.models import ChargePoint, Connector
-from api.web.charge_points.views import CreateChargPointPayloadView
+from api.web.charge_points.views import CreateChargPointPayloadView, UpdateChargePointPayloadView
 from api.web.exceptions import NotFound
 
 
@@ -43,10 +41,7 @@ async def create_charge_point(
         session=Context()
 ) -> ChargePoint:
     data.network_id = network_id
-    data.status = {
-        "1.6": ChargePointStatus.unavailable,
-        "2.0.1": ConnectorStatusType.unavailable
-    }[data.ocpp_version]
+    data.status = ChargePoint.status_class(data.ocpp_version).unavailable
     charge_point = ChargePoint(**data.dict())
     session.add(charge_point)
     return charge_point
@@ -96,6 +91,29 @@ async def create_or_update_connector(
 
 
 @apply_types
+async def update_connector(
+        charge_point_id: str,
+        connector_id: int,
+        payload: Dict,
+        session=Context()
+):
+    """
+    I could not get why sqlalchemy's ''on_conflict_do_update'' is not working.
+    Let it be as is for now.
+    """
+    connector = Connector(
+        charge_point_id=charge_point_id,
+        id=connector_id,
+        **payload
+    )
+    stmt = update(Connector) \
+        .where(Connector.charge_point_id == charge_point_id,
+               Connector.id == connector_id) \
+        .values(**payload)
+    await session.execute(stmt)
+
+
+@apply_types
 async def get_charge_point(
         charge_point_id: str,
         session=Context()
@@ -112,3 +130,22 @@ async def get_charge_point_or_404(charge_point_id) -> ChargePoint:
     if not charge_point:
         raise NotFound(detail=f"The charge point with id: '{charge_point_id}' has not found.")
     return charge_point
+
+
+@apply_types
+async def drop_statuses(charge_point_id: str):
+    charge_point = await get_charge_point(charge_point_id)
+
+    payload = UpdateChargePointPayloadView(
+        status=ChargePoint.status_class(charge_point.ocpp_version).unavailable
+    )
+    await update_charge_point(
+        charge_point_id=charge_point_id,
+        payload=payload.dict(exclude_unset=True)
+    )
+    for connector in charge_point.connectors:
+        await update_connector(
+            charge_point_id=charge_point_id,
+            connector_id=connector.id,
+            payload=payload.dict(exclude_unset=True)
+        )

@@ -5,6 +5,7 @@ from ocpp.v16.enums import ChargePointStatus, ChargePointErrorCode
 from ocpp.v201.enums import ConnectorStatusType, StatusInfoReasonType
 from pydantic import BaseModel, field_validator, Field
 
+from api.web.charge_points.models import ChargePoint
 from api.web.views import PaginationView
 
 
@@ -25,7 +26,8 @@ class CreateChargPointPayloadView(BaseModel):
     @field_validator("ocpp_version")
     @classmethod
     def validate_version(cls, value):
-        assert value in ["1.6", "2.0.1"], "Only versions 1.6 and 2.0.1 are supported"
+        available_versions = list(ChargePoint.available_versions.keys())
+        assert value in available_versions, f"Only versions {' and '.join(available_versions)} are supported"
         return value
 
 

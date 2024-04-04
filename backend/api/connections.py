@@ -84,8 +84,10 @@ async def process_lost_connection(
         scope=Depends(init_local_scope),
         charge_point_id=Context(),
         response_queues=Context(),
+        service: Any = Depends(get_charge_point_service),
         session=Context()
 ):
     logger.info(f"Lost connection with {charge_point_id}")
     response_queues.pop(charge_point_id, None)
+    await service.drop_statuses(charge_point_id)
     await session.commit()
