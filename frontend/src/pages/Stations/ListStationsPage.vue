@@ -23,7 +23,7 @@
         </template>
         <!-- Add new station button-->
         <template v-slot:submit>
-          <submit-form :itemSender="addStation"></submit-form>
+          <submit-form :itemSender="addStation" :callback="fetchData"></submit-form>
         </template>
       </table-header>
 
@@ -58,7 +58,8 @@ const {
   currentPage,
   lastPage,
   items,
-  search
+  search,
+  fetchData
 } = usePagination({
   itemsLoader: listStations,
 });

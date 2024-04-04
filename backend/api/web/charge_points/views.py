@@ -8,17 +8,6 @@ from pydantic import BaseModel, field_validator, Field
 from api.web.views import PaginationView
 
 
-class SingleChargePointView(BaseModel):
-    id: str
-    ocpp_version: str
-    description: Optional[str]
-    vendor: Optional[str]
-    serial_number: Optional[str]
-    model: Optional[str]
-    location: Optional[str]
-    status: Union[ChargePointStatus, ConnectorStatusType]
-
-
 class CreateChargPointPayloadView(BaseModel):
     id: str
     ocpp_version: str
@@ -71,6 +60,7 @@ class SimpleConnectorView(BaseModel):
 class ChargePointView(BaseModel):
     id: str
     ocpp_version: str
+    location: str | None = None
     description: str | None = None
     status: Union[ChargePointStatus, ConnectorStatusType]
     model: str | None = None

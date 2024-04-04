@@ -83,7 +83,8 @@ import TextInput from "@/components/forms/TextInput";
 import {validationRules} from "@/pages/Stations/validators";
 
 const props = defineProps({
-  itemSender: Function
+  itemSender: Function,
+  callback: Function
 })
 const {
   loading,
@@ -97,6 +98,7 @@ const {
   closeModal,
   sendData,
 } = useSubmitForm({
-  itemSender: props.itemSender
+  itemSender: props.itemSender,
+  callback: props.callback
 });
 </script>

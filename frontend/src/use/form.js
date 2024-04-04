@@ -1,6 +1,6 @@
 import {ref, watch} from "vue";
 
-export function useSubmitForm({itemSender}) {
+export function useSubmitForm({itemSender, callback}) {
   const loading = ref(false);
   const isValid = ref(false);
   const dialog = ref(false);
@@ -31,7 +31,12 @@ export function useSubmitForm({itemSender}) {
   const sendData = () => {
     loading.value = true;
     itemSender(data.value)
-      .then(() => closeModal())
+      .then((response) => {
+        if (callback !== undefined) {
+          callback(response)
+        }
+        closeModal();
+      })
       .catch(({response}) => {
         showError.value = true;
         errors.value[response?.data?.key] = response?.data?.detail;
