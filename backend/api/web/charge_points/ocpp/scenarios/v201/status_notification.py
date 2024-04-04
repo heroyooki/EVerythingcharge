@@ -4,11 +4,10 @@ from loguru import logger
 from ocpp.routing import on
 from ocpp.v201 import call_result
 from ocpp.v201.enums import Action, ConnectorStatusType
-from propan import apply_types, Depends, Context
+from propan import apply_types, Depends
 
 from api.web.charge_points import get_charge_point_service
 from api.web.charge_points.views import UpdateChargePointPayloadView
-from api.web.sse import get_sse_publisher
 
 
 class StatusNotificationScenario:
@@ -23,8 +22,6 @@ class StatusNotificationScenario:
             connector_id: int,
             evse_id: int,
             service: Any = Depends(get_charge_point_service),
-            sse_publisher: Any = Depends(get_sse_publisher),
-            session=Context()
     ):
         logger.info(
             f"Accepted '{Action.StatusNotification}' "
@@ -50,8 +47,5 @@ class StatusNotificationScenario:
                 connector_id=connector_id,
                 payload=payload.dict(exclude_unset=True)
             )
-
-        await session.commit()
-        await sse_publisher.charge_point_publisher.publish(self_.charge_point)
 
         return call_result.StatusNotificationPayload()

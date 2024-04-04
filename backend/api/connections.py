@@ -39,12 +39,14 @@ async def handle_events(
         payload: str,
         scope=Depends(init_local_scope),
         handler: Any = Depends(get_handler),
+        session=Context()
 ):
     logger.info(f"Accepted payload from the station "
                 f"(payload={payload}, "
                 f"charge_point_id={handler.charge_point.id}"
                 )
     await handler.route_message(payload)
+    await session.commit()
 
 
 @broker.handle(NEW_CONNECTION_QUEUE_NAME, exchange=connections_exchange)
