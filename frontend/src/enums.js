@@ -36,3 +36,8 @@ export const ELEMENT_COLOR = {
   tabs: "blue-grey-lighten-4"
 }
 
+export const OCPP_VERSION_COLOR = {
+  "1.6": "teal-lighten-3",
+  "2.0.1": "teal-lighten-3"
+}
+

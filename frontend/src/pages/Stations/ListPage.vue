@@ -27,7 +27,13 @@
           <submit-form :itemSender="addStation" :callback="fetchData"></submit-form>
         </template>
       </aligned-row>
-
+    </template>
+    <!-- Colored ocpp version -->
+    <template v-slot:item.ocpp_version="{ item }">
+      <colored-value
+        :value="item.columns.ocpp_version"
+        :colorer="OCPP_VERSION_COLOR"
+      ></colored-value>
     </template>
     <!-- Colored station status -->
     <template v-slot:item.status="{ item }">
@@ -50,7 +56,7 @@ import ColoredValue from "@/components/ColoredValue";
 import AlignedRow from "@/components/AlignedRow";
 import router from "@/router";
 
-import {STATION_STATUS_COLOR} from "@/enums";
+import {OCPP_VERSION_COLOR, STATION_STATUS_COLOR} from "@/enums";
 import {usePagination} from "@/use/pagination";
 import {useInterval} from "@/use/interval";
 import {addStation, listStations} from "@/services/stations";
