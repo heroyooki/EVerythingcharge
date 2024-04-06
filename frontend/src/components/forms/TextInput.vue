@@ -7,7 +7,7 @@
     :required="required"
     density="compact"
     variant="underlined"
-    validate-on="lazy"
+    validate-on="input"
     :modelValue="value"
     @update:modelValue="value = $event"
     @input="cleaner"
@@ -19,9 +19,15 @@ import {defineProps} from "vue";
 
 const props = defineProps({
   rules: Array,
-  required: Boolean,
+  required: {
+    type: Boolean,
+    default: false
+  },
   label: String,
-  isErrorVisible: Boolean,
+  isErrorVisible: {
+    type: Boolean,
+    default: false
+  },
   errorMessage: String,
   cleaner: Function,
   value: String

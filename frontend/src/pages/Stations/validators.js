@@ -12,10 +12,10 @@ export const validationRules = {
 
   description: [
     value => {
-      if (value?.length && value.length < 5) {
+      if (value && value.length && value.length < 5) {
         return "Description must be empty or at least 5 characters long."
       }
-      if (value.length > 124) {
+      if (value && value.length > 124) {
         return "Description must be empty or at most 124 characters long."
       }
       return true

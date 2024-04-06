@@ -11,5 +11,6 @@
 </template>
 
 <script setup>
-const slots = ["search", "title", "submit"];
+
+const slots = ["left", "center", "right"];
 </script>

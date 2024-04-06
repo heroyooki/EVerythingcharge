@@ -1,10 +1,10 @@
 <template>
 
-  <v-btn
-    :color="ELEMENT_COLOR.button"
-    @click="openModal">
-    add
-  </v-btn>
+  <common-button :onClick="openModal">
+    <template v-slot:content>
+      Add
+    </template>
+  </common-button>
 
   <v-form v-model="isValid">
     <v-container>
@@ -51,23 +51,27 @@
               </v-container>
             </v-card-text>
             <v-card-actions class="mb-7">
+
               <v-spacer></v-spacer>
-              <v-btn
-                color="blue-darken-1"
-                variant="text"
-                @click="closeModal"
+
+              <common-button
+                :onClick="closeModal"
                 :disabled="loading"
               >
-                Close
-              </v-btn>
-              <v-btn
-                color="blue-darken-1"
-                variant="text"
-                @click="sendData"
+                <template v-slot:content>
+                  Close
+                </template>
+              </common-button>
+
+              <common-button
+                :onClick="sendData"
                 :loading="loading"
+                :disabled="!isValid || loading"
               >
-                Add
-              </v-btn>
+                <template v-slot:content>
+                  Submit
+                </template>
+              </common-button>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -78,8 +82,8 @@
 
 <script setup>
 import {useSubmitForm} from "@/use/form";
-import {ELEMENT_COLOR} from "@/enums";
 import TextInput from "@/components/forms/TextInput";
+import CommonButton from "@/components/CommonButton"
 import {validationRules} from "@/pages/Stations/validators";
 
 const props = defineProps({

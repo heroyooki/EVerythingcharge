@@ -10,23 +10,23 @@
   >
     <!-- Header -->
     <template v-slot:title="{ title }">
-      <table-header>
+      <aligned-row>
         <!-- Search input -->
-        <template v-slot:search>
+        <template v-slot:left>
           <search-input
             label="Id, Status or Location"
             v-model="search"
           ></search-input>
         </template>
         <!-- Tables's title -->
-        <template v-slot:title>
+        <template v-slot:center>
           {{ title }}
         </template>
         <!-- Add new station button-->
-        <template v-slot:submit>
+        <template v-slot:right>
           <submit-form :itemSender="addStation" :callback="fetchData"></submit-form>
         </template>
-      </table-header>
+      </aligned-row>
 
     </template>
     <!-- Colored station status -->
@@ -45,9 +45,9 @@ import {onMounted, onUnmounted} from "vue";
 import {useStore} from "vuex";
 import {dateAgo} from "@/filters/date";
 import DataTable from "@/components/DataTable";
-import TableHeader from "@/components/TableHeader";
 import SearchInput from "@/components/SearchInput";
 import ColoredValue from "@/components/ColoredValue";
+import AlignedRow from "@/components/AlignedRow";
 import router from "@/router";
 
 import {STATION_STATUS_COLOR} from "@/enums";
