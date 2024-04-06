@@ -32,35 +32,54 @@ const routes = [
           import(
             /* webpackChunkName: "home" */ "@/pages/DashboardPage.vue"
             ),
-      }
-    ],
-  },
-  {
-    path: "/",
-    component: () => import("@/layouts/AppLayout.vue"),
-    beforeEnter: AuthGuard,
-    children: [
+      },
       {
         path: ":networkId/stations",
         name: "Stations",
         component: () =>
           import(
-            /* webpackChunkName: "home" */ "@/pages/Stations/ListStationsPage.vue"
+            /* webpackChunkName: "home" */ "@/pages/Stations/ListPage.vue"
             ),
-      }
-    ],
-  },
-  {
-    path: "/",
-    component: () => import("@/layouts/AppLayout.vue"),
-    beforeEnter: AuthGuard,
-    children: [
+      },
+      {
+        path: ":networkId/stations/:stationId",
+        name: "StationsDetails",
+        component: () =>
+          import(
+            /* webpackChunkName: "home" */ "@/pages/Stations/DetailsPage.vue"
+            ),
+        meta: {
+          hasBackButton: true,
+        },
+      },
+      {
+        path: ":networkId/stations/:stationId/configuration",
+        name: "StationsConfiguration",
+        component: () =>
+          import(
+            /* webpackChunkName: "home" */ "@/pages/Stations/ConfigurationPage.vue"
+            ),
+        meta: {
+          hasBackButton: true,
+        },
+      },
+      {
+        path: ":networkId/stations/:stationId/profiles",
+        name: "ChargingProfiles",
+        component: () =>
+          import(
+            /* webpackChunkName: "home" */ "@/pages/Stations/ChargingProfilesPage.vue"
+            ),
+        meta: {
+          hasBackButton: true,
+        },
+      },
       {
         path: ":networkId/transactions",
         name: "Transactions",
         component: () =>
           import(
-            /* webpackChunkName: "home" */ "@/pages/ListTransactionsPage.vue"
+            /* webpackChunkName: "home" */ "@/pages/Transactions/ListPage.vue"
             ),
       }
     ],

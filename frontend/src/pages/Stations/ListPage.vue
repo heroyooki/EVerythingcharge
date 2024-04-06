@@ -6,6 +6,7 @@
     :current-page="currentPage"
     :last-page="lastPage"
     @page-updated="(newPage) => (currentPage = newPage)"
+    @click-row="onClickRow"
   >
     <!-- Header -->
     <template v-slot:title="{ title }">
@@ -47,12 +48,14 @@ import DataTable from "@/components/DataTable";
 import TableHeader from "@/components/TableHeader";
 import SearchInput from "@/components/SearchInput";
 import ColoredValue from "@/components/ColoredValue";
+import router from "@/router";
 
 import {STATION_STATUS_COLOR} from "@/enums";
 import {usePagination} from "@/use/pagination";
 import {useInterval} from "@/use/interval";
 import {addStation, listStations} from "@/services/stations";
 import SubmitForm from "@/pages/Stations/components/SubmitForm";
+import {initScope} from "@/menu/app-menu-items";
 
 const {commit, getters, dispatch} = useStore();
 
@@ -68,8 +71,16 @@ const {
 
 const {fetchWithInterval, dropInterval} = useInterval();
 
+const onClickRow = ({item}) => {
+  router.push({
+    name: "StationsDetails",
+    params: {stationId: item.value},
+  });
+}
+
 onMounted(() => {
-  fetchWithInterval(fetchData)
+  initScope();
+  fetchWithInterval(fetchData);
 });
 
 onUnmounted(() => {

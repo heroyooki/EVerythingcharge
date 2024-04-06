@@ -1,3 +1,5 @@
+import store from "@/store";
+
 export const menuItems = [
   {
     name: "Dashboard",
@@ -18,3 +20,8 @@ export const menuItems = [
     getPath: ({currentNetwork}) => `/${currentNetwork?.id}/transactions`,
   }
 ];
+
+export const initScope = () => {
+  store.dispatch("setBroadLayout");
+  store.commit("setPageMenuItems", menuItems);
+}

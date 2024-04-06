@@ -5,27 +5,7 @@
       </v-row>
     </v-app-bar>
 
-    <v-navigation-drawer
-      v-model="drawer"
-      :rail="rail"
-      permanent
-      @click="rail = false"
-    >
-      <v-list-item
-        prepend-icon="mdi mdi-badge-account-outline"
-        :title="getters.currentUser.first_name"
-        nav
-      >
-        <template v-slot:append>
-          <v-btn
-            variant="text"
-            icon="mdi-chevron-left"
-            @click.stop="rail = !rail"
-          ></v-btn>
-        </template>
-      </v-list-item>
-
-
+    <v-navigation-drawer permanent>
       <v-list class="mt-5" density="compact" nav>
         <div v-for="(link, i) in getters.pageMenuItems" :key="i">
           <v-list-item
@@ -36,6 +16,9 @@
             :prepend-icon="link.icon"
             :active="isActive(link.key)"
           >
+          </v-list-item>
+          <v-list-item v-if="link.divider">
+            <v-divider></v-divider>
           </v-list-item>
         </div>
       </v-list>
@@ -57,9 +40,17 @@
       ></v-progress-linear>
       <v-container>
         <v-row>
-          <v-col md="12">
+          <v-col md="2">
+            <v-sheet>
+            </v-sheet>
+          </v-col>
+          <v-col :md="getters.columnsNumber">
             <v-sheet class="elevation-4 h-screen">
               <router-view></router-view>
+            </v-sheet>
+          </v-col>
+          <v-col md="2">
+            <v-sheet>
             </v-sheet>
           </v-col>
         </v-row>
