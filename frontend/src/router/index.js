@@ -1,9 +1,15 @@
 // Composables
 import {createRouter, createWebHistory} from "vue-router";
 import AuthGuard from "./guards/auth-guard";
+import HomePageGuard from "@/router/guards/home-page-guard";
 import PublicPageGuard from "./guards/public-page-guard";
 
 const routes = [
+  {
+    path: "/",
+    name: "Home",
+    redirect: HomePageGuard
+  },
   {
     path: "/404",
     name: "404",

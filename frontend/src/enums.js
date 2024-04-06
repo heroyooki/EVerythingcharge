@@ -33,6 +33,6 @@ export const TRANSACTIONS_STATUS = {
 export const ELEMENT_COLOR = {
   button: "blue-lighten-1",
   dangerous_button: "red",
-  tabs: "white"
+  tabs: "blue-grey-lighten-4"
 }
 
