@@ -1,5 +1,15 @@
 export const DATETIME_FORMAT = "MMM DD, YYYY, hh:mm A";
 
+export const STATION_STATUS = {
+  available: "Available",
+  unavailable: "Unavailable",
+  faulted: "Faulted",
+  preparing: "Preparing",
+  charging: "Charging",
+  suspendedEVSE: "SuspendedEVSE",
+  suspendedEV: "SuspendedEV",
+  finishing: "Finishing",
+};
 
 export const STATION_STATUS_COLOR = {
   available: "#8cef91",

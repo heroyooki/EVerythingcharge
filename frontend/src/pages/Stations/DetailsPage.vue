@@ -42,7 +42,9 @@
       <!-- Reset button -->
       <aligned-row>
         <template v-slot:center>
-          <common-button>
+          <common-button
+            :disabled="isForbiddenToReset(item)"
+          >
             <template v-slot:content>
               Reset
             </template>
@@ -116,6 +118,7 @@ import {getStation} from "@/services/stations";
 import {useGetter} from "@/use/getter";
 import {useInterval} from "@/use/interval";
 import {useRouter} from "vue-router";
+import {isForbiddenToReset} from "@/permissions/stations";
 
 const tab = ref();
 const router = useRouter();
