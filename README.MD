@@ -46,6 +46,8 @@ Deployment
 - Make sure that the `RABBITMQ_HOST` refers to the host with running `api`.
 - ```$ sh run.sh -s worker```
 
+### Websocket URL `ws://{your_host}:{your_port}/{charge_point_id}` (example: `ws://localhost:3000/CP0001`)
+
 ### API documentation is available on the `http://{your_host}:8000/docs`
 
 Currenlty implemented scenarios.
