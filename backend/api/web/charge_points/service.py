@@ -125,7 +125,7 @@ async def get_charge_point(
 
 
 @apply_types
-async def get_charge_point_or_404(charge_point_id) -> ChargePoint:
+async def get_charge_point_or_404(charge_point_id: str) -> ChargePoint:
     charge_point = await get_charge_point(charge_point_id)
     if not charge_point:
         raise NotFound(detail=f"The charge point with id: '{charge_point_id}' has not found.")

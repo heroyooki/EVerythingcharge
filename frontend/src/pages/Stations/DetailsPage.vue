@@ -23,19 +23,19 @@
       <!-- Station details -->
       <station-item-card>
         <template v-slot:id>
-          {{ charge_point.id }}
+          {{ item.id }}
         </template>
         <template v-slot:status>
-          {{ charge_point.status }}
+          {{ item.status }}
         </template>
         <template v-slot:vendor>
-          {{ charge_point.vendor }}
+          {{ item.vendor }}
         </template>
         <template v-slot:location>
-          {{ charge_point.location }}
+          {{ item.location }}
         </template>
         <template v-slot:description>
-          {{ charge_point.description }}
+          {{ item.description }}
         </template>
       </station-item-card>
       <v-divider></v-divider>
@@ -63,7 +63,7 @@
         align-tabs="center"
       >
         <v-tab
-          v-for="connector in charge_point.connectors"
+          v-for="connector in item.connectors"
           :value="connector.id"
           class="mdi mdi-connection"
         >connector {{ connector.id }}
@@ -72,7 +72,7 @@
 
       <v-card-item>
         <v-window
-          v-for="connector in charge_point.connectors"
+          v-for="connector in item.connectors"
           v-model="tab"
         >
           <v-window-item :value="connector.id">
@@ -104,7 +104,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from "vue";
+import {onMounted, onUnmounted, ref} from "vue";
 import {initScope} from "@/menu/station-menu-items";
 import AlignedRow from "@/components/AlignedRow";
 import CommonButton from "@/components/CommonButton";
@@ -112,23 +112,32 @@ import StationCard from "@/pages/Stations/components/StationCard";
 import ConnectorItemCard from "@/pages/Stations/components/ConnectorItemCard";
 import StationItemCard from "@/pages/Stations/components/StationItemCard";
 import {ELEMENT_COLOR} from "@/enums";
+import {getStation} from "@/services/stations";
+import {useGetter} from "@/use/getter";
+import {useInterval} from "@/use/interval";
+import {useRouter} from "vue-router";
 
 const tab = ref();
+const router = useRouter();
+const stationId = router.currentRoute.value.params.stationId
 
-const charge_point = {
-  id: "0001",
-  location: "location",
-  vendor: "Vendor",
-  model: "Model",
-  description: "Description",
-  status: "Unavailable",
-  connectors: [
-    {id: 1, status: "Unavailable", error_code: "NoError"},
-    {id: 2, status: "Unavailable", error_code: "NoError"}
-  ]
-}
+const {
+  item,
+  fetchData
+} = useGetter({itemsLoader: () => getStation(stationId)})
+
+const {
+  fetchWithInterval,
+  dropInterval
+} = useInterval();
+
 
 onMounted(() => {
-  initScope()
-})
+  initScope();
+  fetchWithInterval(fetchData);
+});
+
+onUnmounted(() => {
+  dropInterval();
+});
 </script>

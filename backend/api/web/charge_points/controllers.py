@@ -4,7 +4,7 @@ from fastapi import Depends
 from starlette import status
 
 from api.web.charge_points.models import ChargePoint
-from api.web.charge_points.service import create_charge_point, build_charge_points_query
+from api.web.charge_points.service import create_charge_point, build_charge_points_query, get_charge_point_or_404
 from api.web.charge_points.views import PaginatedChargePointsView, ChargePointView
 from api.web.routing import PrivateAPIRouter
 from api.web.utils import paginate, params_extractor
@@ -27,6 +27,15 @@ async def list_charge_points(
         extra_criterias=[ChargePoint.network_id == network_id]
     )
     return PaginatedChargePointsView(items=items, pagination=pagination)
+
+
+@router.get(
+    "/{charge_point_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=ChargePointView
+)
+async def receive_charge_point(charge_point: ChargePoint = Depends(get_charge_point_or_404)):
+    return charge_point
 
 
 @router.post(
