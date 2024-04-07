@@ -5,12 +5,10 @@
       <slot name="id"></slot>
     </v-card-title>
     <v-card-text class="mb-5 mt-5">
-      <text-chip :color="props.color">
-        <template v-slot:content>
-          <slot name="status"></slot>
-        </template>
-      </text-chip>
       <div>
+        <div>
+          <slot name="status"></slot>
+        </div>
         <div class="text-h6 mt-5">
           <slot name="vendor"></slot>
         </div>
@@ -24,11 +22,4 @@
     </v-card-text>
   </v-card-item>
 </template>
-<script setup>
-import TextChip from "@/components/TextChip";
-import {defineProps} from "vue";
-
-const props = defineProps({
-  color: String
-})
-</script>
+<script setup></script>

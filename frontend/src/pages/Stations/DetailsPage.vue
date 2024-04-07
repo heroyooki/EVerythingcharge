@@ -1,5 +1,5 @@
 <template>
-  <station-card>
+  <station-card v-if="item">
     <template v-slot:content>
       <!-- Edit button -->
       <aligned-row>
@@ -26,7 +26,13 @@
           {{ item.id }}
         </template>
         <template v-slot:status>
-          {{ item.status }}
+          <text-chip
+            :color="STATION_STATUS_COLOR[item.status.toLowerCase()]"
+          >
+            <template v-slot:content>
+              {{ item.status }}
+            </template>
+          </text-chip>
         </template>
         <template v-slot:vendor>
           {{ item.vendor }}
@@ -56,7 +62,7 @@
 
   <v-divider></v-divider>
 
-  <station-card>
+  <station-card v-if="item.connectors">
     <!-- Tabs with connectors -->
     <template v-slot:content>
       <v-tabs
@@ -81,7 +87,13 @@
             <!-- Connector details -->
             <connector-item-card>
               <template v-slot:status>
-                {{ connector.status }}
+                <text-chip
+                  :color="STATION_STATUS_COLOR[connector.status.toLowerCase()]"
+                >
+                  <template v-slot:content>
+                    {{ connector.status }}
+                  </template>
+                </text-chip>
               </template>
               <template v-slot:error>
                 {{ connector.error_code }}
@@ -108,12 +120,13 @@
 <script setup>
 import {onMounted, onUnmounted, ref} from "vue";
 import {initScope} from "@/menu/station-menu-items";
+import TextChip from "@/components/TextChip";
 import AlignedRow from "@/components/AlignedRow";
 import CommonButton from "@/components/CommonButton";
 import StationCard from "@/pages/Stations/components/StationCard";
 import ConnectorItemCard from "@/pages/Stations/components/ConnectorItemCard";
 import StationItemCard from "@/pages/Stations/components/StationItemCard";
-import {ELEMENT_COLOR} from "@/enums";
+import {ELEMENT_COLOR, STATION_STATUS_COLOR} from "@/enums";
 import {getStation} from "@/services/stations";
 import {useGetter} from "@/use/getter";
 import {useInterval} from "@/use/interval";

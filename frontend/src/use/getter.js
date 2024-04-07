@@ -2,7 +2,7 @@ import {ref} from "vue";
 import {useStore} from "vuex";
 
 export function useGetter({itemsLoader, callback}) {
-  const item = ref({});
+  const item = ref();
   const {commit} = useStore();
 
   const fetchData = () => {
