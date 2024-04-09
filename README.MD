@@ -61,8 +61,8 @@ Currenlty implemented scenarios.
 | BootNotification   | The station provides additional information about itself in the message, including model, vendor, serial number etc. This information is used to update the charging station's details in the database. The `API` service responds with a Heartbeat interval, specified in the env variable `HEARTBEAT_INTERVAL`. |
 | StatusNotification | Updates charge point's status. Creates connectors or updates ones with statuses and error codes.                                                                                                                                                                                                                  |
 | Heartbeat          | Sync current `API's` (not `worker`) and the station's UTC.                                                                                                                                                                                                                                                        |    
-| Reset              | In progress ...                                                                                                                                                                                                                                                                                                   |  
-
+| Reset              | Every status, except 'Rejected' is getting considered as a permission to reset statuses to 'Unavailable'. If the client received charge_point in the response with 'Unavailable' status, this means the operation was accepted by the station.                                                                                                              |  
+|   Unlock connector | In progress ...|
 
 
 

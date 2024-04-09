@@ -5,7 +5,6 @@ from typing import Any
 from propan import apply_types, Depends
 
 from api.web.charge_points import service as charge_point_service
-from core.utils import get_id_from_amqp_headers
 
 
 def get_charge_point_service():
@@ -14,11 +13,11 @@ def get_charge_point_service():
 
 @apply_types
 async def get_handler(
-        charge_point_id: str = Depends(get_id_from_amqp_headers),
+        charge_point_id: str,
         service: Any = Depends(get_charge_point_service),
 ):
-    from api.web.charge_points.ocpp.handlers.v16 import OCPP16Handler
-    from api.web.charge_points.ocpp.handlers.v201 import OCPP201Handler
+    from api.ocpp_contrib.handlers.v16 import OCPP16Handler
+    from api.ocpp_contrib.handlers.v201 import OCPP201Handler
 
     charge_point = await service.get_charge_point(charge_point_id)
 

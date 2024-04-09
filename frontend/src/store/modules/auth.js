@@ -1,6 +1,8 @@
 import router from "@/router";
 import {request} from "@/api";
 
+import {menuItems} from "@/menu/app-menu-items";
+
 const getDefaultState = () => {
   return {
     isAuthorized: false,
@@ -16,6 +18,7 @@ function _processSuccessfulLogout(commit) {
   commit("unsetAuthorized");
   commit("unsetUser");
   commit("unsetCurrentNetwork");
+  commit("setPageMenuItems", menuItems);
   router.push("/login");
 }
 

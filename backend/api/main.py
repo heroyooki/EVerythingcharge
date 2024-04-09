@@ -13,9 +13,7 @@ from api.connections import init_global_scope
 from api.repositories.web import CookiesRepo
 from api.web.auth.backends.jwt import JWTAuthenticationBackend
 from api.web.auth.middlewares.jwt import JWTAuthenticationMiddleware
-from api.web.charge_points.controllers import (
-    router as charge_points_router
-)
+from api.web.charge_points.controllers.router import router as charge_points_router
 from api.web.exceptions import NotAuthenticated
 from api.web.exceptions.handlers import (
     unique_violation_exception_handler,

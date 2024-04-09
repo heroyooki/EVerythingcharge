@@ -7,7 +7,7 @@ from propan import Depends
 from propan import apply_types, Context
 
 from api.web.charge_points.models import ChargePoint
-from core.annotations import TasksExchange, AMQPHeaders
+from core.annotations import TasksExchange
 from core.utils import get_settings
 
 
@@ -31,13 +31,15 @@ class OCPPHandler(cp):
         self_._response_queue = response_queues[self_.id]
         self_._response_timeout = settings.RESPONSE_TIMEOUT
         self_.route_map = create_route_map(self_)
+        self_.amqp_headers = {
+            settings.CHARGE_POINT_ID_HEADER_NAME: charge_point.id
+        }
 
     @apply_types
     async def _send(
-            this,
+            self_,
             payload,
             exchange: TasksExchange,
-            amqp_headers: AMQPHeaders,
             broker=Context()
     ):
         await broker.publish(
@@ -45,8 +47,8 @@ class OCPPHandler(cp):
             exchange=exchange,
             routing_key="",
             content_type="text/plain",
-            headers=amqp_headers
+            headers=self_.amqp_headers
         )
 
-    async def start(this):
+    async def start(self_):
         pass

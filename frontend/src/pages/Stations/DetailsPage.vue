@@ -49,6 +49,8 @@
       <aligned-row>
         <template v-slot:center>
           <common-button
+            :loading="resetLoading"
+            :onClick="() => resetStation(item.id)"
             :disabled="isForbiddenToReset(item)"
           >
             <template v-slot:content>
@@ -62,7 +64,7 @@
 
   <v-divider></v-divider>
 
-  <station-card v-if="item.connectors">
+  <station-card v-if="item?.connectors">
     <!-- Tabs with connectors -->
     <template v-slot:content>
       <v-tabs
@@ -128,14 +130,17 @@ import ConnectorItemCard from "@/pages/Stations/components/ConnectorItemCard";
 import StationItemCard from "@/pages/Stations/components/StationItemCard";
 import {ELEMENT_COLOR, STATION_STATUS_COLOR} from "@/enums";
 import {getStation} from "@/services/stations";
+import {reset} from "@/services/ocpp/reset";
 import {useGetter} from "@/use/getter";
 import {useInterval} from "@/use/interval";
 import {useRouter} from "vue-router";
 import {isForbiddenToReset} from "@/permissions/stations";
 
+const resetLoading = ref(false);
 const tab = ref();
 const router = useRouter();
 const stationId = router.currentRoute.value.params.stationId
+const resetType = ref("Soft")
 
 const {
   item,
@@ -156,4 +161,13 @@ onMounted(() => {
 onUnmounted(() => {
   dropInterval();
 });
+
+const resetStation = (stationId) => {
+  resetLoading.value = true;
+  reset(stationId, {type: resetType.value})
+    .then(station => {
+      item.value = station;
+    })
+    .finally(() => resetLoading.value = false)
+}
 </script>

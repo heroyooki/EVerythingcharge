@@ -133,13 +133,13 @@ async def get_charge_point_or_404(charge_point_id: str) -> ChargePoint:
 
 
 @apply_types
-async def drop_statuses(charge_point_id: str):
+async def drop_statuses(charge_point_id: str) -> ChargePoint:
     charge_point = await get_charge_point(charge_point_id)
 
     payload = UpdateChargePointPayloadView(
         status=ChargePoint.status_class(charge_point.ocpp_version).unavailable
     )
-    await update_charge_point(
+    charge_point = await update_charge_point(
         charge_point_id=charge_point_id,
         payload=payload.dict(exclude_unset=True)
     )
@@ -149,3 +149,4 @@ async def drop_statuses(charge_point_id: str):
             connector_id=connector.id,
             payload=payload.dict(exclude_unset=True)
         )
+    return charge_point

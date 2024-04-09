@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from fast_depends import Depends
 from loguru import logger
 from propan import Context
 from propan.annotations import ContextRepo
 
+from api.ocpp_contrib.handlers.v16 import OCPP16Handler
+from api.ocpp_contrib.handlers.v201 import OCPP201Handler
 from api.web.charge_points import get_handler, get_charge_point_service
 from core.broker import broker, events_exchange, connections_exchange
 from core.models import get_contextual_session
@@ -23,7 +25,7 @@ from core.utils import get_id_from_amqp_headers
 
 async def init_local_scope(
         context: ContextRepo,
-        charge_point_id=Depends(get_id_from_amqp_headers)
+        charge_point_id: str = Depends(get_id_from_amqp_headers)
 ):
     async with get_contextual_session() as session:
         context.set_local("session", session)
@@ -38,13 +40,15 @@ async def init_global_scope(context):
 async def handle_events(
         payload: str,
         scope=Depends(init_local_scope),
-        handler: Any = Depends(get_handler),
-        session=Context()
+        session=Context(),
+        charge_point_id: str = Context()
 ):
     logger.info(f"Accepted payload from the station "
                 f"(payload={payload}, "
-                f"charge_point_id={handler.charge_point.id}"
+                f"charge_point_id={charge_point_id}"
                 )
+
+    handler: Union[OCPP16Handler, OCPP201Handler] = await get_handler(charge_point_id)
     await handler.route_message(payload)
     await session.commit()
 
@@ -53,7 +57,7 @@ async def handle_events(
 async def accept_new_connection(
         scope=Depends(init_local_scope),
         service: Any = Depends(get_charge_point_service),
-        charge_point_id=Context(),
+        charge_point_id=Depends(get_id_from_amqp_headers),
         response_queues: Dict = Context(),
         session=Context()
 ):
@@ -82,7 +86,7 @@ async def accept_new_connection(
 @broker.handle(LOST_CONNECTION_QUEUE_NAME, exchange=connections_exchange)
 async def process_lost_connection(
         scope=Depends(init_local_scope),
-        charge_point_id=Context(),
+        charge_point_id=Depends(get_id_from_amqp_headers),
         response_queues=Context(),
         service: Any = Depends(get_charge_point_service),
         session=Context()
