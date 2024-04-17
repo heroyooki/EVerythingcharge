@@ -21,7 +21,7 @@ class StatusNotificationScenario:
             connector_status: ConnectorStatusType,
             connector_id: int,
             evse_id: int,
-            service: Any = Depends(get_charge_point_service),
+            service: Any = Depends(get_charge_point_service)
     ):
         logger.info(
             f"Accepted '{Action.StatusNotification}' "

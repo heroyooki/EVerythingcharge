@@ -5,6 +5,7 @@ from ocpp.v201.enums import ResetStatusType
 from api.ocpp_contrib.handlers.base import OCPPHandler
 from api.ocpp_contrib.scenarios.v201.boot_notification import BootNotificationScenario
 from api.ocpp_contrib.scenarios.v201.heartbeat import HeartbeatScenario
+from api.ocpp_contrib.scenarios.v201.notify_event import NotifyEventScenario
 from api.ocpp_contrib.scenarios.v201.status_notification import StatusNotificationScenario
 
 
@@ -14,7 +15,8 @@ class OCPP201Handler(
 
     BootNotificationScenario,
     StatusNotificationScenario,
-    HeartbeatScenario
+    HeartbeatScenario,
+    NotifyEventScenario
 ):
     reset_payload_class = ResetPayload
     reset_status_class = ResetStatusType
