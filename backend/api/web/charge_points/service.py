@@ -5,8 +5,9 @@ from sqlalchemy import select, update, or_, func, String
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import selectable
 
-from api.web.charge_points.models import ChargePoint, Connector
-from api.web.charge_points.views import CreateChargPointPayloadView, UpdateChargePointPayloadView
+from api.web.charge_points.models import ChargePoint, Connector, Configuration
+from api.web.charge_points.views import CreateChargPointPayloadView, UpdateChargePointPayloadView, \
+    CreateConfigurationView
 from api.web.exceptions import NotFound
 
 
@@ -97,15 +98,6 @@ async def update_connector(
         payload: Dict,
         session=Context()
 ):
-    """
-    I could not get why sqlalchemy's ''on_conflict_do_update'' is not working.
-    Let it be as is for now.
-    """
-    connector = Connector(
-        charge_point_id=charge_point_id,
-        id=connector_id,
-        **payload
-    )
     stmt = update(Connector) \
         .where(Connector.charge_point_id == charge_point_id,
                Connector.id == connector_id) \
@@ -150,3 +142,14 @@ async def drop_statuses(charge_point_id: str) -> ChargePoint:
             payload=payload.dict(exclude_unset=True)
         )
     return charge_point
+
+
+@apply_types
+async def create_configurations(
+        charge_point_id: str,
+        data: List[CreateConfigurationView],
+        session=Context()
+):
+    session.add_all(
+        [Configuration(**config.dict(), charge_point_id=charge_point_id) for config in data]
+    )

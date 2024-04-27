@@ -3,24 +3,24 @@
 
     <v-list lines="two">
       <v-list-item
-        v-for="key in Object.keys(configurationSet)"
+        v-for="key in Object.keys(getters.currentConfigurations)"
         :key="key"
-        :title="configurationSet[key].verbose"
+        :title="getters.currentConfigurations[key].verbose"
         :subtitle="key"
       >
         <template v-slot:append>
 
           <v-switch
-            v-if="isBoolean(configurationSet[key].value)"
+            v-if="isBoolean(getters.currentConfigurations[key].value)"
             disabled
-            :model-value="configurationSet[key].value"
+            :model-value="getters.currentConfigurations[key].value"
             :color="ELEMENT_COLOR.button"
           ></v-switch>
 
           <v-text-field
             v-else
             disabled
-            v-model="configurationSet[key].value"
+            v-model="getters.currentConfigurations[key].value"
             hide-details
             single-line
             variant="outlined"
@@ -35,34 +35,14 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from "vue";
+import {onMounted} from "vue";
 import {initScope} from "@/menu/station-menu-items";
 import {ELEMENT_COLOR} from "@/enums";
+import {useStore} from "vuex";
+
+const {getters} = useStore();
 
 const isBoolean = val => !!val === val;
-
-const configurationSet = ref({
-  AuthorizeRemoteTxRequests: {
-    verbose: 'Enable authorized remote transaction requests',
-    value: false,
-    name: "authorize_remote_tx_requests"
-  },
-  StopTransactionOnEVSideDisconnect: {
-    verbose: 'Enable stop transaction on EV side disconnect',
-    value: true,
-    name: "stop_transaction_on_ev_side_disconnect"
-  },
-  UnlockConnectorOnEVSideDisconnect: {
-    verbose: 'Enable unlock connector on EV side disconnect',
-    value: true,
-    name: "unlock_connector_on_ev_side_disconnect"
-  },
-  MeterValueSampleInterval: {
-    verbose: 'The interval for meter values in seconds',
-    value: 60,
-    name: "meter_value_sample_interval"
-  }
-})
 
 onMounted(() => {
   initScope()

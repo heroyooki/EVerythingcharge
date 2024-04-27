@@ -46,13 +46,41 @@ class ChargePoint(Model):
                               passive_deletes=True,
                               lazy="joined",
                               order_by="Connector.id")
+    configurations = relationship("Configuration", back_populates="charge_point", lazy="joined")
 
     @staticmethod
-    def status_class(ocpp_version) -> Union[ChargePointStatus, ConnectorStatusType]:
+    def status_class(ocpp_version: str) -> Union[ChargePointStatus, ConnectorStatusType]:
+        """
+        Get the status class for a given OCPP version.
+
+        Args:
+            ocpp_version (str): The OCPP version.
+
+        Returns:
+            Union[ChargePointStatus, ConnectorStatusType]: The status class for the given OCPP version.
+        """
+        # Get the status class for the given OCPP version
         return ChargePoint.available_versions[ocpp_version]["status_class"]
 
     def __repr__(self):
         return f"ChargePoint (id={self.id}, status={self.status}, location={self.location})"
+
+
+class Configuration(Model):
+    __tablename__ = "configurations"
+
+    __table_args__ = (
+        UniqueConstraint("key", "charge_point_id"),
+    )
+
+    key = Column(String, nullable=False)
+    value = Column(String, nullable=False)
+
+    charge_point_id = Column(String, ForeignKey("charge_points.id", ondelete='CASCADE'), nullable=False)
+    charge_point = relationship("ChargePoint", back_populates="configurations", lazy="joined")
+
+    def __repr__(self):
+        return f"Configuration (key={self.key}, value={self.value})"
 
 
 class Connector(Model):

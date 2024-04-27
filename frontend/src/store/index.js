@@ -6,6 +6,7 @@ import navigation from "@/store/modules/navigation";
 import networks from "@/store/modules/networks";
 import layout from "@/store/modules/layout";
 import stations from "@/store/modules/stations";
+import configurations from "@/store/modules/configurations";
 
 const getDefaultState = () => {
   return {
@@ -36,7 +37,8 @@ export default createStore({
     navigation,
     networks,
     layout,
-    stations
+    stations,
+    configurations
   },
   plugins: [
     createPersistedState({

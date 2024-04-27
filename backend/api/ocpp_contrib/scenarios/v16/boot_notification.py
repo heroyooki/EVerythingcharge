@@ -1,13 +1,14 @@
 from typing import Any
 
 from loguru import logger
-from ocpp.routing import on
+from ocpp.routing import on, after
 from ocpp.v16 import call_result
+from ocpp.v16.call import ChangeConfigurationPayload
 from ocpp.v16.enums import Action, RegistrationStatus
 from propan import apply_types, Depends
 
 from api.web.charge_points import get_charge_point_service
-from api.web.charge_points.views import UpdateChargePointPayloadView
+from api.web.charge_points.views import UpdateChargePointPayloadView, ConfigurationView
 from core.utils import get_formatted_utc, get_settings
 
 
@@ -44,3 +45,16 @@ class BootNotificationScenario:
             interval=settings.HEARTBEAT_INTERVAL,
             status=RegistrationStatus.accepted,
         )
+
+    @after(Action.BootNotification)
+    async def after_boot_notification(self_, **kwargs):
+        logger.info(f"Sending configurations (configurations={self_.charge_point.configurations})")
+        for conf in self_.charge_point.configurations:
+            payload = ConfigurationView(key=conf.key, value=conf.value).dict()
+            try:
+                response = await self_.call(ChangeConfigurationPayload(**payload))
+                logger.info(f"Sent {ChangeConfigurationPayload(**payload)} (response={response})")
+            except TimeoutError:
+                logger.warning(
+                    f"Exceeded timeout when sending {ChangeConfigurationPayload(**payload)}"
+                )

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Union, Optional, List
+from typing import Union, Optional, List, Any
 
 from ocpp.v16.enums import ChargePointStatus, ChargePointErrorCode
 from ocpp.v201.enums import ConnectorStatusType, StatusInfoReasonType
@@ -29,6 +29,35 @@ class CreateChargPointPayloadView(BaseModel):
         available_versions = list(ChargePoint.available_versions.keys())
         assert value in available_versions, f"Only versions {' and '.join(available_versions)} are supported"
         return value
+
+
+class CreateConfigurationView(BaseModel):
+    key: str
+    value: Any
+
+    @field_validator("value")
+    @classmethod
+    def validate_value(cls, value):
+        """
+        Storing all values as a string
+        :param value:
+        :return:
+        """
+        return str(value)
+
+
+class ConfigurationView(BaseModel):
+    key: str
+    value: Any
+
+    @field_validator("value")
+    @classmethod
+    def validate_value(cls, value):
+        """
+        :param value:
+        :return:
+        """
+        return value.lower()
 
 
 class UpdateChargePointPayloadView(BaseModel):
