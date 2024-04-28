@@ -37,7 +37,6 @@ class ChargePoint(Model):
     model = Column(String, nullable=True)
     ocpp_version = Column(String, nullable=False)
     error_code = Column(String, nullable=True)
-    evse_id = Column(Integer, nullable=True)
 
     network_id = Column(String, ForeignKey("networks.id"), nullable=False)
     network = relationship(Network, back_populates="charge_points", lazy="joined")
@@ -87,11 +86,11 @@ class Connector(Model):
     __tablename__ = "connectors"
 
     __table_args__ = (
-        UniqueConstraint("id", "charge_point_id"),
-        PrimaryKeyConstraint("id", "charge_point_id")
+        PrimaryKeyConstraint("id", "charge_point_id", "evse_id"),
     )
 
     id = Column(Integer, nullable=False)
+    evse_id = Column(Integer, nullable=True)
     status = Column(String, index=True, nullable=False)
     error_code = Column(String, nullable=True)
 

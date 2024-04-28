@@ -33,19 +33,14 @@ class StatusNotificationScenario:
             f"evse_id={evse_id})"
         )
         payload = UpdateChargePointPayloadView(
-            status=connector_status
+            status=connector_status,
+            evse_id=evse_id
         )
-        if not connector_id:
-            payload.evse_id = evse_id
-            await service.update_charge_point(
-                charge_point_id=self_.id,
-                payload=payload.dict(exclude_unset=True)
-            )
-        else:
-            await service.create_or_update_connector(
-                charge_point_id=self_.id,
-                connector_id=connector_id,
-                payload=payload.dict(exclude_unset=True)
-            )
+
+        await service.create_or_update_connector(
+            charge_point_id=self_.id,
+            connector_id=connector_id,
+            payload=payload.dict(exclude_unset=True)
+        )
 
         return call_result.StatusNotificationPayload()
