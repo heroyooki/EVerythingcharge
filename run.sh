@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -a
-source .env
+. ./.env
 
 if [ $# -lt 1 ]; then
     echo "Usage: $0 -s [api|worker]"
