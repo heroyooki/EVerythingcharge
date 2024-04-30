@@ -40,6 +40,8 @@ done
 
 ensure_backend_env() {
     local var_name="$1"
+    echo "Start ensure backend env with '$var_name'."
+
     local var_value="${!var_name}"
     if [ -z "$var_value" ]; then
         echo "Environment variable $var_name is not set or empty."
