@@ -34,11 +34,14 @@ connection. Each new `worker` creates a new queue in rabbitmq and listens for me
 Deployment
 ----------
 
+### Requirements: docker, docker-compose
+
 ### Raise app on the single server:
 
 - ```$ cp .env.backend .env```
 - Setup environment variables
-- ```$ sh run.sh -s api -s worker```
+- ```$ chmod +x run.sh```
+- ```$ ./run.sh -s api -s worker```
 
 ### Raise one more `worker` on the different server:
 
