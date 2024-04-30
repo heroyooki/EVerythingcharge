@@ -47,7 +47,8 @@ Deployment
 
 - ```$ cp .env.backend .env```
 - Make sure that the `RABBITMQ_HOST` refers to the host with running `api`.
-- ```$ sh run.sh -s worker```
+- ```$ chmod +x run.sh```
+- ```$ ./run.sh -s worker```
 
 #### Websocket URL `ws://{your_host}:{your_port}/{charge_point_id}` (example: `ws://localhost:3000/CP0001`)
 
