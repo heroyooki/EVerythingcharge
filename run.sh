@@ -91,7 +91,7 @@ elif [ $worker_flag -eq 1 ] && [ $api_flag -eq 1 ]; then
 
 # This option is using to run the worker on the different server.
 elif [ $worker_flag -eq 1 ] && [ $api_flag -eq 0 ]; then
-    ensure_env "RABBITMQ_HOST"
+    ensure_backend_env "RABBITMQ_HOST"
     echo "\n >>> Build and run 'worker' service ... \n"
     docker build -t everythingcharge-worker .
     docker run -it -d --env-file .env \
