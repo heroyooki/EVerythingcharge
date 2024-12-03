@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-from typing import Union
-
-from ocpp.v16.enums import ChargePointStatus, ChargePointErrorCode
-from ocpp.v201.enums import ConnectorStatusType, StatusInfoReasonType
 from sqlalchemy import (
     Column,
     String,
@@ -17,17 +13,6 @@ from core.models import Model
 
 class ChargePoint(Model):
     __tablename__ = "charge_points"
-
-    available_versions = {
-        "1.6": dict(
-            status_class=ChargePointStatus,
-            error_code=ChargePointErrorCode
-        ),
-        "2.0.1": dict(
-            status_class=ConnectorStatusType,
-            error_code=StatusInfoReasonType
-        )
-    }
 
     description = Column(String(124), nullable=True)
     status = Column(String, index=True, nullable=False)
@@ -46,20 +31,6 @@ class ChargePoint(Model):
                               lazy="joined",
                               order_by="Connector.id")
     configurations = relationship("Configuration", back_populates="charge_point", lazy="joined")
-
-    @staticmethod
-    def status_class(ocpp_version: str) -> Union[ChargePointStatus, ConnectorStatusType]:
-        """
-        Get the status class for a given OCPP version.
-
-        Args:
-            ocpp_version (str): The OCPP version.
-
-        Returns:
-            Union[ChargePointStatus, ConnectorStatusType]: The status class for the given OCPP version.
-        """
-        # Get the status class for the given OCPP version
-        return ChargePoint.available_versions[ocpp_version]["status_class"]
 
     def __repr__(self):
         return f"ChargePoint (id={self.id}, status={self.status}, location={self.location})"

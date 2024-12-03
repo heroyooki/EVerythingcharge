@@ -19,6 +19,7 @@ from core.broker import (
     connections_exchange,
     tasks_exchange
 )
+from core.dependencies import get_id_from_amqp_headers
 from core.settings import (
     FORCE_CLOSE_CONNECTION_QUEUE_NAME,
     WS_SERVER_PORT,
@@ -26,7 +27,6 @@ from core.settings import (
     EVENTS_QUEUE_NAME,
     LOST_CONNECTION_QUEUE_NAME
 )
-from core.utils import get_id_from_amqp_headers
 from worker.protocols import BaseWebSocketServerProtocol
 from worker.router import (
     redirect_payload_to_broker,
@@ -118,7 +118,7 @@ async def main(tasks_repo: TasksRepo, context: ContextRepo):
         '0.0.0.0',
         WS_SERVER_PORT,
         create_protocol=BaseWebSocketServerProtocol,
-        subprotocols=['ocpp1.6', 'ocpp2.0.1']
+        subprotocols=['ocpp2.0.1']
     )
     context.set_global("ws_server", server)
 

@@ -3,11 +3,6 @@
 set -a
 . ./.env
 
-if [ $# -lt 1 ]; then
-    echo "Usage: $0 -s [api|worker]"
-    exit 1
-fi
-
 api_flag=0
 worker_flag=0
 
@@ -68,10 +63,10 @@ if [ $api_flag -eq 1 ] && [ $worker_flag -eq 0 ]; then
     ensure_frontend_env
     echo "\n >>> Build and run 'api' service ... \n"
     docker-compose up --build -d
-    docker logs -f --tail 50 EVapi
+    docker logs -f --tail 50 everythingcharge-api
 
 # This option is using to run the worker and api on the same server.
-elif [ $worker_flag -eq 1 ] && [ $api_flag -eq 1 ]; then
+elif [ $worker_flag -eq 0 ] && [ $api_flag -eq 0 ]; then
     ensure_backend_env "ALLOWED_ORIGIN"
     ensure_frontend_env
     echo "\n >>> Build and run 'api' and 'worker' services ... \n"
@@ -82,12 +77,12 @@ elif [ $worker_flag -eq 1 ] && [ $api_flag -eq 1 ]; then
     docker build -t everythingcharge-worker .
     docker run -it -d --env-file .env \
       --network everythingcharge_app-network \
-      --name EVworker \
+      --name everythingcharge-worker \
       -p "$WS_SERVER_PORT:$WS_SERVER_PORT" \
       -e RABBITMQ_HOST=$ip_address \
       everythingcharge-worker
     echo "\n >>> Connecting worker to the queue on the '$ip_address' host ... \n"
-    docker logs -f --tail 50 EVapi & docker logs -f --tail 50 EVworker
+    docker logs -f --tail 50 everythingcharge-api
 
 # This option is using to run the worker on the different server.
 elif [ $worker_flag -eq 1 ] && [ $api_flag -eq 0 ]; then
@@ -95,9 +90,9 @@ elif [ $worker_flag -eq 1 ] && [ $api_flag -eq 0 ]; then
     echo "\n >>> Build and run 'worker' service ... \n"
     docker build -t everythingcharge-worker .
     docker run -it -d --env-file .env \
-      --name EVworker \
+      --name everythingcharge-worker \
       -p "$WS_SERVER_PORT:$WS_SERVER_PORT" \
       everythingcharge-worker
     echo "\n >>> Connecting worker to the queue on the '$RABBITMQ_HOST' host ... \n"
-    docker logs -f --tail 50 EVworker
+    docker logs -f --tail 50 everythingcharge-worker
 fi

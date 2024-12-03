@@ -8,7 +8,7 @@ from propan import apply_types, Context
 
 from api.web.charge_points.models import ChargePoint
 from core.annotations import TasksExchange
-from core.utils import get_settings
+from core.dependencies import get_settings
 
 
 class OCPPHandler(cp):
@@ -50,5 +50,6 @@ class OCPPHandler(cp):
             headers=self_.amqp_headers
         )
 
+    # To prevent default behavior because we dont need it
     async def start(self_):
         pass

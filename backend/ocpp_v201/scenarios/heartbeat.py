@@ -2,13 +2,13 @@ from typing import Any
 
 from loguru import logger
 from ocpp.routing import on
-from ocpp.v16 import call_result
-from ocpp.v16.enums import Action, ChargePointStatus
+from ocpp.v201 import call_result
+from ocpp.v201.enums import Action, ConnectorStatusType
 from propan import Depends, apply_types
 
 from api.web.charge_points import get_charge_point_service
 from api.web.charge_points.views import UpdateChargePointPayloadView
-from core.utils import get_formatted_utc
+from core.dependencies import get_formatted_utc
 
 
 class HeartbeatScenario:
@@ -24,9 +24,8 @@ class HeartbeatScenario:
             f"Accepted '{Action.Heartbeat}' "
             f"(charge_point_id={self_.id})"
         )
-
         payload = UpdateChargePointPayloadView(
-            status=ChargePointStatus.available
+            status=ConnectorStatusType.available
         )
         await service.update_charge_point(
             charge_point_id=self_.id,

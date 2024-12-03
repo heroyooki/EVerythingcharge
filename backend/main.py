@@ -9,7 +9,6 @@ from propan.annotations import ContextRepo
 from sqlalchemy.exc import IntegrityError
 from starlette.middleware.exceptions import ExceptionMiddleware
 
-from api.connections import init_global_scope
 from api.repositories.web import CookiesRepo
 from api.web.auth.backends.jwt import JWTAuthenticationBackend
 from api.web.auth.middlewares.jwt import JWTAuthenticationMiddleware
@@ -31,6 +30,7 @@ from core.annotations import TasksRepo
 from core.broker import broker
 from core.middlewares import DBSessionMiddleware
 from core.settings import ALLOWED_ORIGIN
+from ocpp_v201.events import init_global_scope
 
 app = FastAPI(
     exception_handlers={

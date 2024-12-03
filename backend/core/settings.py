@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import os
+import sys
 
 from loguru import logger
 
 DEBUG = os.environ.get("DEBUG") == "1"
-BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(os.path.curdir)))
-
-TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname((__file__))))
 
 DB_NAME = os.environ["DB_NAME"]
 DB_PASSWORD = os.environ["DB_PASSWORD"]
@@ -20,14 +19,13 @@ WS_SERVER_PORT = int(os.environ["WS_SERVER_PORT"])
 DATABASE_ASYNC_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
 DATABASE_SYNC_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
 
+format = "{time} - {level} - {file} - {message} - {extra}"
 logger.add(
-    "everythingcharge.log",
+    sys.stdout,
     enqueue=True,
     backtrace=True,
-    diagnose=DEBUG,
-    format="{time} - {level} - {message}",
-    rotation="500 MB",
-    level="INFO"
+    format=format,
+    level="INFO",
 )
 
 DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss"

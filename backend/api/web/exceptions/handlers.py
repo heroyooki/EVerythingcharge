@@ -8,7 +8,7 @@ from propan import apply_types, Depends
 from sqlalchemy.exc import IntegrityError
 from starlette import status
 
-from core.utils import get_settings
+from core.dependencies import get_settings
 
 
 async def format_custom_exception(request: Request, exc: HTTPException):

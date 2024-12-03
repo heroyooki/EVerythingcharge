@@ -1,6 +1,5 @@
 from typing import Dict
 
-from loguru import logger
 from propan import Context, apply_types
 from propan.brokers.rabbit import RabbitExchange
 
@@ -24,10 +23,6 @@ async def redirect_payload_to_broker(
         payload: str,
         broker=Context(),
 ):
-    logger.info(
-        f"Redirecting payload to the broker "
-        f"(payload={payload}, "
-        f"exchange={exchange})")
     await broker.publish(
         payload,
         exchange=exchange,

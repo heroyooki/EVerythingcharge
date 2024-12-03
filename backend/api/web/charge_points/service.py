@@ -1,13 +1,17 @@
 from typing import Dict, List, Any
 
+from ocpp.v201.enums import ConnectorStatusType
 from propan import apply_types, Context
 from sqlalchemy import select, update, or_, func, String
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import selectable
 
 from api.web.charge_points.models import ChargePoint, Connector, Configuration
-from api.web.charge_points.views import CreateChargPointPayloadView, UpdateChargePointPayloadView, \
+from api.web.charge_points.views import (
+    CreateChargPointPayloadView,
+    UpdateChargePointPayloadView,
     CreateConfigurationView
+)
 from api.web.exceptions import NotFound
 
 
@@ -42,7 +46,7 @@ async def create_charge_point(
         session=Context()
 ) -> ChargePoint:
     data.network_id = network_id
-    data.status = ChargePoint.status_class(data.ocpp_version).unavailable
+    data.status = ConnectorStatusType.unavailable
     charge_point = ChargePoint(**data.dict())
     session.add(charge_point)
     return charge_point
@@ -126,10 +130,8 @@ async def get_charge_point_or_404(charge_point_id: str) -> ChargePoint:
 
 @apply_types
 async def drop_statuses(charge_point_id: str) -> ChargePoint:
-    charge_point = await get_charge_point(charge_point_id)
-
     payload = UpdateChargePointPayloadView(
-        status=ChargePoint.status_class(charge_point.ocpp_version).unavailable
+        status=ConnectorStatusType.unavailable
     )
     charge_point = await update_charge_point(
         charge_point_id=charge_point_id,

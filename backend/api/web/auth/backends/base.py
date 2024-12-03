@@ -5,7 +5,7 @@ from starlette.authentication import AuthenticationBackend as BaseAuthentication
 
 from api.repositories.web import WebRepository
 from api.web.auth.views import AuthToken
-from core.utils import get_settings
+from core.dependencies import get_settings
 
 
 class AuthenticationBackend(BaseAuthenticationBackend):

@@ -5,10 +5,10 @@ from typing import Annotated, Dict
 from propan import Depends
 from propan.brokers.rabbit import RabbitExchange
 
-import core.utils as utils
+import core.dependencies as dependencies
 
-TasksRepo = Annotated[set, Depends(utils.get_tasks_repository)]
-AMQPHeaders = Annotated[Dict, Depends(utils.get_default_amqp_headers)]
-EventsExchange = Annotated[RabbitExchange, Depends(utils.get_events_exchange)]
-TasksExchange = Annotated[RabbitExchange, Depends(utils.get_tasks_exchange)]
-ConnectionsExchange = Annotated[RabbitExchange, Depends(utils.get_connections_exchange)]
+TasksRepo = Annotated[set, Depends(dependencies.get_tasks_repository)]
+AMQPHeaders = Annotated[Dict, Depends(dependencies.get_default_amqp_headers)]
+EventsExchange = Annotated[RabbitExchange, Depends(dependencies.get_events_exchange)]
+TasksExchange = Annotated[RabbitExchange, Depends(dependencies.get_tasks_exchange)]
+ConnectionsExchange = Annotated[RabbitExchange, Depends(dependencies.get_connections_exchange)]

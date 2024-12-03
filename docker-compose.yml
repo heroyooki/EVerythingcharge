@@ -69,11 +69,12 @@ services:
       - app-network
 
   everythingcharge-api:
-    container_name: EVapi
+    container_name: everythingcharge-api
     build:
       context: .
     volumes:
       - ./backend:/ocpp/backend
+      - ./backend/everythingcharge.log:/var/log/everythingcharge.log
     ports:
       - "${HTTP_SERVER_PORT}:${HTTP_SERVER_PORT}"
     env_file:
@@ -84,7 +85,6 @@ services:
     command: >
       sh -c "cd /ocpp/backend && \
              alembic upgrade head && \
-             cd api && \
              uvicorn main:app --host 0.0.0.0 --port ${HTTP_SERVER_PORT} --reload"
     depends_on:
       everythingcharge-rabbitmq:

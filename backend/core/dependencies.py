@@ -24,15 +24,6 @@ def get_formatted_utc(
     return utc.strftime(settings.UTC_DATETIME_FORMAT)
 
 
-async def get_default_amqp_headers(
-        charge_point_id: str = Context(),
-        settings: Any = Depends(get_settings)
-):
-    return {
-        settings.CHARGE_POINT_ID_HEADER_NAME: charge_point_id
-    }
-
-
 async def get_tasks_repository():
     return background_tasks
 
@@ -49,9 +40,17 @@ async def get_connections_exchange():
     return connections_exchange
 
 
+async def get_default_amqp_headers(
+        charge_point_id: str = Context(),
+        settings: Any = Depends(get_settings)
+):
+    return {
+        settings.CHARGE_POINT_ID_HEADER_NAME: charge_point_id
+    }
+
+
 async def get_id_from_amqp_headers(
-        settings: Any = Depends(get_settings),
         headers: Dict = Context("message.headers"),
+        settings: Any = Depends(get_settings)
 ) -> str:
-    result = headers[settings.CHARGE_POINT_ID_HEADER_NAME]
-    return result
+    return headers[settings.CHARGE_POINT_ID_HEADER_NAME]
