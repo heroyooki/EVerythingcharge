@@ -1,15 +1,13 @@
 from typing import Dict, List, Any
 
-from ocpp.v201.enums import ConnectorStatusType
 from propan import apply_types, Context
 from sqlalchemy import select, update, or_, func, String
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import selectable
 
-from api.web.charge_points.models import ChargePoint, Connector, Configuration
+from api.web.charge_points.models import ChargePoint, Connector, Configuration, Connection
 from api.web.charge_points.views import (
     CreateChargPointPayloadView,
-    UpdateChargePointPayloadView,
     CreateConfigurationView
 )
 from api.web.exceptions import NotFound
@@ -46,9 +44,10 @@ async def create_charge_point(
         session=Context()
 ) -> ChargePoint:
     data.network_id = network_id
-    data.status = ConnectorStatusType.unavailable
     charge_point = ChargePoint(**data.dict())
     session.add(charge_point)
+    connection = Connection(charge_point_id=charge_point.id)
+    session.add(connection)
     return charge_point
 
 
@@ -65,6 +64,22 @@ async def update_charge_point(
     scalar_result = await session.scalars(stmt)
     results = scalar_result.unique()
     return results.first()
+
+
+@apply_types
+async def mark_charge_point_as_connected(charge_point_id: str, session=Context()):
+    stmt = update(Connection) \
+        .where(Connection.charge_point_id == charge_point_id) \
+        .values(is_active=True)
+    await session.execute(stmt)
+
+
+@apply_types
+async def mark_charge_point_as_disconnected(charge_point_id: str, session=Context()):
+    stmt = update(Connection) \
+        .where(Connection.charge_point_id == charge_point_id) \
+        .values(is_active=False)
+    await session.execute(stmt)
 
 
 @apply_types
@@ -96,20 +111,6 @@ async def create_or_update_connector(
 
 
 @apply_types
-async def update_connector(
-        charge_point_id: str,
-        connector_id: int,
-        payload: Dict,
-        session=Context()
-):
-    stmt = update(Connector) \
-        .where(Connector.charge_point_id == charge_point_id,
-               Connector.id == connector_id) \
-        .values(**payload)
-    await session.execute(stmt)
-
-
-@apply_types
 async def get_charge_point(
         charge_point_id: str,
         session=Context()
@@ -125,24 +126,6 @@ async def get_charge_point_or_404(charge_point_id: str) -> ChargePoint:
     charge_point = await get_charge_point(charge_point_id)
     if not charge_point:
         raise NotFound(detail=f"The charge point with id: '{charge_point_id}' has not found.")
-    return charge_point
-
-
-@apply_types
-async def drop_statuses(charge_point_id: str) -> ChargePoint:
-    payload = UpdateChargePointPayloadView(
-        status=ConnectorStatusType.unavailable
-    )
-    charge_point = await update_charge_point(
-        charge_point_id=charge_point_id,
-        payload=payload.dict(exclude_unset=True)
-    )
-    for connector in charge_point.connectors:
-        await update_connector(
-            charge_point_id=charge_point_id,
-            connector_id=connector.id,
-            payload=payload.dict(exclude_unset=True)
-        )
     return charge_point
 
 

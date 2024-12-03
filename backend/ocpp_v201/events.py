@@ -8,6 +8,7 @@ from propan.annotations import ContextRepo
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.web.charge_points import get_charge_point_service
+from api.web.exceptions import NotFound
 from core.broker import broker, events_exchange, connections_exchange
 from core.dependencies import get_id_from_amqp_headers
 from core.models import get_contextual_session
@@ -56,9 +57,10 @@ async def accept_new_connection(
         response_queues: Dict = Context(),
         session: AsyncSession = Context()
 ):
-    charge_point = await service.get_charge_point(charge_point_id)
     with logger.contextualize(charge_point_id=charge_point_id):
-        if not charge_point:
+        try:
+            await service.get_charge_point_or_404(charge_point_id)
+        except NotFound:
             await broker.publish(
                 json.dumps([]),
                 exchange=connections_exchange,
@@ -69,9 +71,10 @@ async def accept_new_connection(
                 }
             )
             logger.info(f"Cancelling connection")
-            return
-        response_queues[charge_point_id] = asyncio.Queue()
-        logger.info(f"Accepted connection")
+        else:
+            response_queues[charge_point_id] = asyncio.Queue()
+            await service.mark_charge_point_as_connected(charge_point_id)
+            logger.info(f"Accepted connection")
 
     await session.commit()
 
@@ -79,9 +82,13 @@ async def accept_new_connection(
 @broker.handle(LOST_CONNECTION_QUEUE_NAME, exchange=connections_exchange)
 async def process_lost_connection(
         _=Depends(init_local_scope),
+        service: Any = Depends(get_charge_point_service),
         charge_point_id=Depends(get_id_from_amqp_headers),
-        response_queues: Dict = Context()
+        response_queues: Dict = Context(),
+        session: AsyncSession = Context()
 ):
     with logger.contextualize(charge_point_id=charge_point_id):
         response_queues.pop(charge_point_id, None)
+        await service.mark_charge_point_as_disconnected(charge_point_id)
+        await session.commit()
         logger.info(f"Lost connection")
