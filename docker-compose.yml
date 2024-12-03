@@ -68,6 +68,22 @@ services:
     networks:
       - app-network
 
+  everythingcharge-test-db:
+    image: postgres:15.3-bullseye
+    restart: always
+    container_name: everythingcharge-test-db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: "${TEST_DB_USER}"
+      POSTGRES_PASSWORD: "${TEST_DB_PASSWORD}"
+      POSTGRES_DB: "${TEST_DB_NAME}"
+      PGDATA: "/var/lib/postgres"
+    healthcheck:
+      test: "exit 0"
+    networks:
+      - app-network
+
   everythingcharge-api:
     container_name: everythingcharge-api
     build:

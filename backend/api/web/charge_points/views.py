@@ -1,34 +1,16 @@
 from datetime import datetime
-from typing import Union, Optional, List, Any
+from typing import Union, List, Any
 
 from ocpp.v16.enums import ChargePointStatus, ChargePointErrorCode
 from ocpp.v201.enums import ConnectorStatusType, StatusInfoReasonType
-from pydantic import BaseModel, field_validator, Field
+from pydantic import BaseModel, field_validator, Field, ConfigDict
 
-from api.web.charge_points.models import ChargePoint
 from api.web.views import PaginationView
 
 
 class CreateChargPointPayloadView(BaseModel):
-    id: str
-    ocpp_version: str
+    id: str = Field(..., max_length=20)
     network_id: Union[str, None] = None
-    description: Optional[str] = Field(None, min_length=5, max_length=124)
-    vendor: Optional[str] = Field(None, min_length=3, max_length=24)
-    serial_number: Optional[str] = Field(None, min_length=3, max_length=24)
-    model: Optional[str] = Field(None, min_length=3, max_length=24)
-    location: Optional[str] = Field(None, min_length=3, max_length=48)
-    status: Union[ChargePointStatus, ConnectorStatusType, None] = None
-
-    class Config:
-        validate_assignment = True
-
-    @field_validator("ocpp_version")
-    @classmethod
-    def validate_version(cls, value):
-        available_versions = list(ChargePoint.available_versions.keys())
-        assert value in available_versions, f"Only versions {' and '.join(available_versions)} are supported"
-        return value
 
 
 class CreateConfigurationView(BaseModel):
@@ -75,8 +57,7 @@ class SimpleChargePoint(BaseModel):
     location: str | None = None
     updated_at: datetime | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SimpleConnectorView(BaseModel):
@@ -84,8 +65,7 @@ class SimpleConnectorView(BaseModel):
     status: Union[ChargePointStatus, ConnectorStatusType]
     error_code: Union[ChargePointErrorCode, None] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ChargePointView(BaseModel):
@@ -99,8 +79,7 @@ class ChargePointView(BaseModel):
     updated_at: datetime | None = None
     connectors: List[SimpleConnectorView] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PaginatedChargePointsView(BaseModel):

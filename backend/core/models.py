@@ -7,18 +7,17 @@ import arrow
 from sqlalchemy import Column, String, DateTime, Boolean
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 from core import settings
 
 
-def init_db(settings):
-    engine = create_async_engine(settings.DATABASE_ASYNC_URL)
+def init_db(url):
+    engine = create_async_engine(url)
     return sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
-asession = init_db(settings)
+asession = init_db(settings.DATABASE_ASYNC_URL)
 Base = declarative_base()
 
 

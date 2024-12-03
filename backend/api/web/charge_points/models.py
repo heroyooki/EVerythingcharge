@@ -19,7 +19,8 @@ class ChargePoint(Model):
     serial_number = Column(String, nullable=True)
     location = Column(String, nullable=True)
     model = Column(String, nullable=True)
-    network_id = Column(String, ForeignKey("networks.id"), nullable=False)
+
+    network_id = Column(String, ForeignKey("networks.id"), nullable=True)
     network = relationship(Network, back_populates="charge_points", lazy="joined")
     connectors = relationship("Connector",
                               back_populates="charge_point",
@@ -36,7 +37,7 @@ class ChargePoint(Model):
 class Connection(Model):
     __tablename__ = "connections"
 
-    status = Column(String, index=True, nullable=False)
+    status = Column(String, nullable=True)
     error_code = Column(String, nullable=True)
 
     charge_point_id = Column(String, ForeignKey("charge_points.id", ondelete='CASCADE'), nullable=False)

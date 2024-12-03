@@ -39,14 +39,15 @@ async def build_charge_points_query(
 
 @apply_types
 async def create_charge_point(
-        network_id: str,
         data: CreateChargPointPayloadView,
         session=Context()
 ) -> ChargePoint:
-    data.network_id = network_id
-    charge_point = ChargePoint(**data.dict())
+    charge_point = ChargePoint(**data.model_dump())
     session.add(charge_point)
-    connection = Connection(charge_point_id=charge_point.id)
+    connection = Connection(
+        charge_point_id=charge_point.id,
+        is_active=False
+    )
     session.add(connection)
     return charge_point
 
@@ -136,5 +137,5 @@ async def create_configurations(
         session=Context()
 ):
     session.add_all(
-        [Configuration(**config.dict(), charge_point_id=charge_point_id) for config in data]
+        [Configuration(**config.model_dump(), charge_point_id=charge_point_id) for config in data]
     )
