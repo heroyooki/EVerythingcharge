@@ -62,7 +62,7 @@ if [ $api_flag -eq 1 ] && [ $worker_flag -eq 0 ]; then
     ensure_backend_env "ALLOWED_ORIGIN"
     ensure_frontend_env
     echo "\n >>> Build and run 'api' service ... \n"
-    docker-compose up --build -d
+    docker-compose -f docker-compose.yml up --build -d
     docker logs -f --tail 50 everythingcharge-api
 
 # This option is using to run the worker and api on the same server.
@@ -71,7 +71,7 @@ elif [ $worker_flag -eq 0 ] && [ $api_flag -eq 0 ]; then
     ensure_frontend_env
     echo "\n >>> Build and run 'api' and 'worker' services ... \n"
     echo "VITE_API_URL=$ALLOWED_ORIGIN:$HTTP_SERVER_PORT" > frontend/.env.local
-    docker-compose up --build -d
+    docker-compose -f docker-compose.yml up --build -d
     inspect_output=$(docker inspect everythingcharge-rabbitmq)
     ip_address=$(echo "$inspect_output" | jq -r '.[0].NetworkSettings.Networks."everythingcharge_app-network".IPAddress')
     docker build -t everythingcharge-worker .

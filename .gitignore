@@ -5,6 +5,7 @@ db_data
 .env
 .env.local
 __pycache__
+docker-compose-develop.yml
 
 # Log files
 *.log

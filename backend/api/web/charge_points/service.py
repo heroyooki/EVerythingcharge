@@ -1,7 +1,7 @@
 from typing import Dict, List, Any
 
 from propan import apply_types, Context
-from sqlalchemy import select, update, or_, func, String
+from sqlalchemy import select, update, or_, func, String, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import selectable
 
@@ -25,12 +25,12 @@ async def build_charge_points_query(
     query = select(ChargePoint)
     for criteria in criterias:
         query = query.where(criteria)
-    query = query.order_by(ChargePoint.status.asc())
+    query = query.order_by(ChargePoint.connection.status.asc())
     if search:
         query = query.where(
             or_(
                 func.lower(ChargePoint.id).contains(func.lower(search)),
-                func.cast(ChargePoint.status, String).ilike(f"{search}%"),
+                func.cast(ChargePoint.connection.status, String).ilike(f"{search}%"),
                 func.lower(ChargePoint.location).contains(func.lower(search)),
             )
         )
@@ -50,6 +50,12 @@ async def create_charge_point(
     )
     session.add(connection)
     return charge_point
+
+
+@apply_types
+async def delete_charge_points(charge_point_ids: List[str], session=Context()):
+    query = delete(ChargePoint).where(ChargePoint.id.in_(charge_point_ids))
+    await session.execute(query)
 
 
 @apply_types

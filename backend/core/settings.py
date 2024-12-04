@@ -14,16 +14,10 @@ DB_PORT = int(os.environ["DB_PORT"])
 DB_USER = os.environ["DB_USER"]
 DB_HOST = os.environ["DB_HOST"]
 
-TEST_DB_NAME = os.environ["TEST_DB_NAME"]
-TEST_DB_PASSWORD = os.environ["TEST_DB_PASSWORD"]
-TEST_DB_PORT = int(os.environ["TEST_DB_PORT"])
-TEST_DB_USER = os.environ["TEST_DB_USER"]
-TEST_DB_HOST = os.environ["TEST_DB_HOST"]
-
 WS_SERVER_PORT = int(os.environ["WS_SERVER_PORT"])
+OCPP_SUBPROTOCOLS = ["ocpp2.0.1"]
 
 DATABASE_ASYNC_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
-TEST_DATABASE_ASYNC_URL = f"postgresql+asyncpg://{TEST_DB_USER}:{TEST_DB_PASSWORD}@{TEST_DB_HOST}/{TEST_DB_NAME}"
 DATABASE_SYNC_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
 
 format = "{time} - {level} - {file} - {message} - {extra}"
