@@ -6,8 +6,8 @@ from ocpp.v201 import call_result
 from ocpp.v201.enums import RegistrationStatusType, Action
 from propan import apply_types, Depends
 
-from api.web.charge_points import get_charge_point_service
-from api.web.charge_points.views import UpdateChargePointPayloadView
+from app.web.charge_points import get_charge_point_service
+from app.web.charge_points.views import UpdateChargePointPayloadView
 from core.dependencies import get_formatted_utc, get_settings
 
 

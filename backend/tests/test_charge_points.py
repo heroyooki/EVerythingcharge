@@ -1,7 +1,7 @@
 import pytest
 
-from api.web.charge_points import get_charge_point_service
-from api.web.charge_points.models import ChargePoint
+from app.web.charge_points import get_charge_point_service
+from app.web.charge_points.models import ChargePoint
 
 service = get_charge_point_service()
 

@@ -6,7 +6,7 @@ from ocpp.routing import create_route_map
 from propan import Depends
 from propan import apply_types, Context
 
-from api.web.charge_points.models import ChargePoint
+from app.web.charge_points.models import ChargePoint
 from core.annotations import TasksExchange
 from core.dependencies import get_settings
 

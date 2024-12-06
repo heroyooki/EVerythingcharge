@@ -9,20 +9,20 @@ from propan.annotations import ContextRepo
 from sqlalchemy.exc import IntegrityError
 from starlette.middleware.exceptions import ExceptionMiddleware
 
-from api.repositories.web import CookiesRepo
-from api.web.auth.backends.jwt import JWTAuthenticationBackend
-from api.web.auth.middlewares.jwt import JWTAuthenticationMiddleware
-from api.web.charge_points.controllers.router import router as charge_points_router
-from api.web.exceptions import NotAuthenticated
-from api.web.exceptions.handlers import (
+from app.repositories.web import CookiesRepo
+from app.web.auth.backends.jwt import JWTAuthenticationBackend
+from app.web.auth.middlewares.jwt import JWTAuthenticationMiddleware
+from app.web.charge_points.controllers.router import router as charge_points_router
+from app.web.exceptions import NotAuthenticated
+from app.web.exceptions.handlers import (
     unique_violation_exception_handler,
     unexpected_exceptions_handler,
     format_custom_exception
 )
-from api.web.networks.controllers import (
+from app.web.networks.controllers import (
     private_router as networks_private_router
 )
-from api.web.users.controllers import (
+from app.web.users.controllers import (
     public_router as users_public_router,
     private_router as users_private_router
 )

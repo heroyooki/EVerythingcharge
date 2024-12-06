@@ -6,8 +6,8 @@ from ocpp.v201 import call_result
 from ocpp.v201.enums import Action, ConnectorStatusType
 from propan import apply_types, Depends
 
-from api.web.charge_points import get_charge_point_service
-from api.web.charge_points.views import UpdateChargePointPayloadView
+from app.web.charge_points import get_charge_point_service
+from app.web.charge_points.views import UpdateChargePointPayloadView
 
 
 class StatusNotificationScenario:

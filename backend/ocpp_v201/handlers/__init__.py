@@ -5,7 +5,7 @@ from typing import Any
 from ocpp.v201 import ChargePoint as ChargePoint201
 from propan import apply_types, Depends
 
-from api.web.charge_points import get_charge_point_service
+from app.web.charge_points import get_charge_point_service
 from ocpp_v201.handlers.base import OCPPHandler
 from ocpp_v201.scenarios.boot_notification import BootNotificationScenario
 from ocpp_v201.scenarios.data_transfer import DataTransferScenario

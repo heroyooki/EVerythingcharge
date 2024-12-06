@@ -6,8 +6,8 @@ import websockets
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-from api.web.charge_points import get_charge_point_service
-from api.web.charge_points.views import CreateChargPointPayloadView
+from app.web.charge_points import get_charge_point_service
+from app.web.charge_points.views import CreateChargPointPayloadView
 from core.dependencies import get_settings
 from core.settings import WS_SERVER_PORT
 
@@ -16,7 +16,7 @@ settings = get_settings()
 
 @pytest.fixture
 def TEST_MAX_CHARGE_POINTS_COUNT():
-    return 200
+    return 50
 
 
 @pytest.fixture

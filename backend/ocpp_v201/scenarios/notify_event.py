@@ -7,8 +7,8 @@ from ocpp.v201.datatypes import EventDataType
 from ocpp.v201.enums import Action, EventTriggerType, ConnectorVariableName, PhysicalComponentName
 from propan import apply_types, Depends
 
-from api.web.charge_points import get_charge_point_service
-from api.web.charge_points.views import UpdateChargePointPayloadView
+from app.web.charge_points import get_charge_point_service
+from app.web.charge_points.views import UpdateChargePointPayloadView
 
 
 class NotifyEventScenario:

@@ -7,8 +7,8 @@ from propan import Context, Depends
 from propan.annotations import ContextRepo
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.web.charge_points import get_charge_point_service
-from api.web.exceptions import NotFound
+from app.web.charge_points import get_charge_point_service
+from app.web.exceptions import NotFound
 from core.broker import broker, events_exchange, connections_exchange
 from core.dependencies import get_id_from_amqp_headers
 from core.models import get_contextual_session
