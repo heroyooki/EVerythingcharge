@@ -8,7 +8,6 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     SmallInteger
 )
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 
 from app.web.connections.models import Connection
@@ -32,6 +31,7 @@ class ChargePoint(Model):
     grid_id = Column(String, ForeignKey("grids.id", ondelete='SET NULL'), nullable=False)
     grid = relationship(Grid, back_populates="charge_points", lazy="joined")
     configurations = relationship("Configuration", back_populates="charge_point", lazy="joined")
+    modem = relationship("Modem", back_populates="charge_point", lazy="joined", uselist=False)
     location = relationship(
         Location,
         foreign_keys=[Location.master_id],
@@ -48,9 +48,6 @@ class ChargePoint(Model):
     )
     evses = relationship("EVSE", back_populates="charge_point", lazy="joined")
 
-    def __repr__(self):
-        return f"ChargePoint (id={self.id}, location={self.location})"
-
 
 class EVSE(Model):
     __tablename__ = "evses"
@@ -59,7 +56,6 @@ class EVSE(Model):
     )
 
     id = Column(String(20), primary_key=True)
-    custom_data = Column(JSONB, default=dict)
 
     charge_point_id = Column(String, ForeignKey("charge_points.id", ondelete='CASCADE'), nullable=False)
     charge_point = relationship("ChargePoint", back_populates="evses", lazy="joined")
@@ -85,9 +81,6 @@ class Connector(Model):
     )
 
     id = Column(String(20), primary_key=True)
-    status = Column(String, index=True, nullable=False)
-    reason = Column(String, nullable=True)
-    custom_data = Column(JSONB, default=dict)
 
     evse_id = Column(String, ForeignKey("evses.id", ondelete='CASCADE'), nullable=False)
     evse = relationship("EVSE", back_populates="connectors", lazy="joined")
@@ -111,9 +104,18 @@ class Configuration(Model):
     id = Column(SmallInteger, primary_key=True)
     key = Column(String, nullable=False)
     value = Column(String, nullable=False)
+    verbose = Column(String, nullable=True)
 
     charge_point_id = Column(String, ForeignKey("charge_points.id", ondelete='CASCADE'), nullable=False)
     charge_point = relationship("ChargePoint", back_populates="configurations", lazy="joined")
 
-    def __repr__(self):
-        return f"Configuration (key={self.key}, value={self.value})"
+
+class Modem(Model):
+    __tablename__ = "modems"
+
+    id = Column(SmallInteger, primary_key=True)
+
+    iccid = Column(String, nullable=True)
+    imsi = Column(String, nullable=True)
+    charge_point_id = Column(String, ForeignKey("charge_points.id", ondelete='CASCADE'), nullable=False)
+    charge_point = relationship("ChargePoint", back_populates="modem", lazy="joined")
