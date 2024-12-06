@@ -3,10 +3,15 @@ from __future__ import annotations
 from sqlalchemy import (
     Column,
     String,
-    ForeignKey, UniqueConstraint, PrimaryKeyConstraint, SmallInteger
+    ForeignKey,
+    UniqueConstraint,
+    PrimaryKeyConstraint,
+    SmallInteger
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 
+from app.web.connections.models import Connection
 from app.web.grids.models import Grid
 from app.web.locations.models import Location
 from core.models import Model
@@ -19,20 +24,14 @@ class ChargePoint(Model):
     )
 
     id = Column(String(20), primary_key=True)
-    description = Column(String(124), nullable=True)
-    vendor = Column(String, nullable=True)
+    vendor_name = Column(String, nullable=False)
     serial_number = Column(String, nullable=True)
-    model = Column(String, nullable=True)
+    model = Column(String, nullable=False)
+    firmware_version = Column(String, nullable=True)
 
     grid_id = Column(String, ForeignKey("grids.id", ondelete='SET NULL'), nullable=False)
     grid = relationship(Grid, back_populates="charge_points", lazy="joined")
-    connectors = relationship("Connector",
-                              back_populates="charge_point",
-                              passive_deletes=True,
-                              lazy="joined",
-                              order_by="Connector.id")
     configurations = relationship("Configuration", back_populates="charge_point", lazy="joined")
-    connection = relationship("Connection", back_populates="charge_point", lazy="joined", uselist=False)
     location = relationship(
         Location,
         foreign_keys=[Location.master_id],
@@ -40,20 +39,63 @@ class ChargePoint(Model):
         lazy="joined",
         uselist=False
     )
+    connection = relationship(
+        Connection,
+        foreign_keys=[Connection.master_id],
+        primaryjoin="ChargePoint.id==Connection.master_id",
+        lazy="joined",
+        uselist=False
+    )
+    evses = relationship("EVSE", back_populates="charge_point", lazy="joined")
 
     def __repr__(self):
         return f"ChargePoint (id={self.id}, location={self.location})"
 
 
-class Connection(Model):
-    __tablename__ = "connections"
+class EVSE(Model):
+    __tablename__ = "evses"
 
     id = Column(SmallInteger, primary_key=True)
-    status = Column(String, nullable=True)
-    error_code = Column(String, nullable=True)
+    custom_data = Column(JSONB, default=dict)
 
     charge_point_id = Column(String, ForeignKey("charge_points.id", ondelete='CASCADE'), nullable=False)
-    charge_point = relationship("ChargePoint", back_populates="connection", lazy="noload")
+    charge_point = relationship("ChargePoint", back_populates="evses", lazy="joined")
+    connectors = relationship("Connector",
+                              back_populates="evse",
+                              passive_deletes=True,
+                              lazy="joined",
+                              order_by="Connector.id")
+    connection = relationship(
+        Connection,
+        foreign_keys=[Connection.master_id],
+        primaryjoin="EVSE.id==Connection.master_id",
+        lazy="joined",
+        uselist=False
+    )
+
+
+class Connector(Model):
+    __tablename__ = "connectors"
+
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "evse_id"),
+    )
+
+    id = Column(SmallInteger, primary_key=True)
+    status = Column(String, index=True, nullable=False)
+    reason = Column(String, nullable=True)
+    custom_data = Column(JSONB, default=dict)
+
+    evse_id = Column(SmallInteger, ForeignKey("evses.id", ondelete='CASCADE'), nullable=False)
+    evse = relationship("EVSE", back_populates="connectors", lazy="joined")
+
+    connection = relationship(
+        Connection,
+        foreign_keys=[Connection.master_id],
+        primaryjoin="Connector.id==Connection.master_id",
+        lazy="joined",
+        uselist=False
+    )
 
 
 class Configuration(Model):
@@ -72,18 +114,3 @@ class Configuration(Model):
 
     def __repr__(self):
         return f"Configuration (key={self.key}, value={self.value})"
-
-
-class Connector(Model):
-    __tablename__ = "connectors"
-
-    __table_args__ = (
-        PrimaryKeyConstraint("id", "charge_point_id"),
-    )
-
-    id = Column(SmallInteger, primary_key=True)
-    status = Column(String, index=True, nullable=False)
-    error_code = Column(String, nullable=True)
-
-    charge_point_id = Column(String, ForeignKey("charge_points.id", ondelete='CASCADE'), nullable=False)
-    charge_point = relationship("ChargePoint", back_populates="connectors", lazy="joined")

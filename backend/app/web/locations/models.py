@@ -1,7 +1,7 @@
 from sqlalchemy import (
     Column,
     String,
-    Float
+    REAL
 )
 
 from core.models import Model
@@ -10,8 +10,8 @@ from core.models import Model
 class Location(Model):
     __tablename__ = "locations"
 
-    latitude = Column(Float(5), nullable=True)
-    longitude = Column(Float(5), nullable=True)
+    latitude = Column(REAL, nullable=True)
+    longitude = Column(REAL, nullable=True)
     city = Column(String, nullable=True)
     address = Column(String, nullable=True)
 

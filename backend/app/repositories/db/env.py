@@ -9,7 +9,7 @@ from app.web.charge_points.models import *
 from core.models import Base
 from core.settings import DATABASE_SYNC_URL
 
-__all__ = ["ChargePoint", "Grid", "Account"]
+__all__ = ["ChargePoint", "Grid", "Account", "Connection"]
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
