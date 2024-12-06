@@ -8,6 +8,7 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     SmallInteger
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 
 from app.web.connections.models import Connection
@@ -27,6 +28,7 @@ class ChargePoint(Model):
     serial_number = Column(String, nullable=True)
     model = Column(String, nullable=False)
     firmware_version = Column(String, nullable=True)
+    custom_data = Column(JSONB, default=dict)
 
     grid_id = Column(String, ForeignKey("grids.id", ondelete='SET NULL'), nullable=False)
     grid = relationship(Grid, back_populates="charge_points", lazy="joined")
