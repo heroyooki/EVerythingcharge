@@ -54,8 +54,11 @@ class ChargePoint(Model):
 
 class EVSE(Model):
     __tablename__ = "evses"
+    __table_args__ = (
+        PrimaryKeyConstraint("id", "charge_point_id"),
+    )
 
-    id = Column(SmallInteger, primary_key=True)
+    id = Column(String(20), primary_key=True)
     custom_data = Column(JSONB, default=dict)
 
     charge_point_id = Column(String, ForeignKey("charge_points.id", ondelete='CASCADE'), nullable=False)
@@ -81,12 +84,12 @@ class Connector(Model):
         PrimaryKeyConstraint("id", "evse_id"),
     )
 
-    id = Column(SmallInteger, primary_key=True)
+    id = Column(String(20), primary_key=True)
     status = Column(String, index=True, nullable=False)
     reason = Column(String, nullable=True)
     custom_data = Column(JSONB, default=dict)
 
-    evse_id = Column(SmallInteger, ForeignKey("evses.id", ondelete='CASCADE'), nullable=False)
+    evse_id = Column(String, ForeignKey("evses.id", ondelete='CASCADE'), nullable=False)
     evse = relationship("EVSE", back_populates="connectors", lazy="joined")
 
     connection = relationship(
