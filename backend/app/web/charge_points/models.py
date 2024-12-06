@@ -8,6 +8,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from app.web.grids.models import Grid
+from app.web.locations.models import Location
 from core.models import Model
 
 
@@ -21,7 +22,6 @@ class ChargePoint(Model):
     description = Column(String(124), nullable=True)
     vendor = Column(String, nullable=True)
     serial_number = Column(String, nullable=True)
-    location = Column(String, nullable=True)
     model = Column(String, nullable=True)
 
     grid_id = Column(String, ForeignKey("grids.id", ondelete='SET NULL'), nullable=False)
@@ -33,6 +33,13 @@ class ChargePoint(Model):
                               order_by="Connector.id")
     configurations = relationship("Configuration", back_populates="charge_point", lazy="joined")
     connection = relationship("Connection", back_populates="charge_point", lazy="joined", uselist=False)
+    location = relationship(
+        Location,
+        foreign_keys=[Location.master_id],
+        primaryjoin="ChargePoint.id==Location.master_id",
+        lazy="joined",
+        uselist=False
+    )
 
     def __repr__(self):
         return f"ChargePoint (id={self.id}, location={self.location})"

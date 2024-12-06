@@ -4,6 +4,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
+from app.web.locations.models import Location
 from core.models import Model
 
 
@@ -19,3 +20,11 @@ class Grid(Model):
     account = relationship("Account", back_populates="grids", lazy="joined")
 
     charge_points = relationship("ChargePoint", back_populates="grid", lazy="joined")
+
+    location = relationship(
+        Location,
+        foreign_keys=[Location.master_id],
+        primaryjoin="Grid.id==Location.master_id",
+        lazy="joined",
+        uselist=False
+    )
