@@ -3,25 +3,29 @@ from __future__ import annotations
 from sqlalchemy import (
     Column,
     String,
-    ForeignKey, Integer, UniqueConstraint, PrimaryKeyConstraint
+    ForeignKey, UniqueConstraint, PrimaryKeyConstraint, SmallInteger
 )
 from sqlalchemy.orm import relationship
 
-from app.web.networks.models import Network
+from app.web.grids.models import Grid
 from core.models import Model
 
 
 class ChargePoint(Model):
     __tablename__ = "charge_points"
+    __table_args__ = (
+        UniqueConstraint("grid_id", "id"),
+    )
 
+    id = Column(String(20), primary_key=True)
     description = Column(String(124), nullable=True)
     vendor = Column(String, nullable=True)
     serial_number = Column(String, nullable=True)
     location = Column(String, nullable=True)
     model = Column(String, nullable=True)
 
-    network_id = Column(String, ForeignKey("networks.id"), nullable=True)
-    network = relationship(Network, back_populates="charge_points", lazy="joined")
+    grid_id = Column(String, ForeignKey("grids.id", ondelete='SET NULL'), nullable=False)
+    grid = relationship(Grid, back_populates="charge_points", lazy="joined")
     connectors = relationship("Connector",
                               back_populates="charge_point",
                               passive_deletes=True,
@@ -37,6 +41,7 @@ class ChargePoint(Model):
 class Connection(Model):
     __tablename__ = "connections"
 
+    id = Column(SmallInteger, primary_key=True)
     status = Column(String, nullable=True)
     error_code = Column(String, nullable=True)
 
@@ -51,6 +56,7 @@ class Configuration(Model):
         UniqueConstraint("key", "charge_point_id"),
     )
 
+    id = Column(SmallInteger, primary_key=True)
     key = Column(String, nullable=False)
     value = Column(String, nullable=False)
 
@@ -68,7 +74,7 @@ class Connector(Model):
         PrimaryKeyConstraint("id", "charge_point_id"),
     )
 
-    id = Column(Integer, nullable=False)
+    id = Column(SmallInteger, primary_key=True)
     status = Column(String, index=True, nullable=False)
     error_code = Column(String, nullable=True)
 

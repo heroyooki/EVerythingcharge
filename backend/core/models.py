@@ -39,14 +39,13 @@ async def get_contextual_session() -> AsyncSession:
 
 
 def generate_default_id():
-    # ocpp requires max 20 characters for some id values
-    return uuid4().hex[:20]
+    return str(uuid4())
 
 
 class Model(Base):
     __abstract__ = True
 
-    id = Column(String(20), primary_key=True, index=True, default=generate_default_id, unique=True)
+    id = Column(String(36), primary_key=True, index=True, default=generate_default_id, unique=True)
     created_at = Column(DateTime, default=lambda: arrow.utcnow().datetime.replace(tzinfo=None))
     updated_at = Column(DateTime, onupdate=lambda: arrow.utcnow().datetime.replace(tzinfo=None), nullable=True)
     is_active = Column(Boolean, default=True)
