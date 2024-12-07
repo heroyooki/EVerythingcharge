@@ -5,7 +5,7 @@ from sqlalchemy import select, update, or_, func, String, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import selectable
 
-from app.web.charge_points.models import ChargePoint, Connector, Configuration, Connection
+from app.web.charge_points.models import ChargePoint, Connector, Configuration, Connection, Modem
 from app.web.charge_points.views import (
     CreateChargPointPayloadView,
     CreateConfigurationView
@@ -45,10 +45,14 @@ async def create_charge_point(
     charge_point = ChargePoint(**data.model_dump())
     session.add(charge_point)
     connection = Connection(
-        charge_point_id=charge_point.id,
+        master_id=charge_point.id,
         is_active=False
     )
     session.add(connection)
+    modem = Modem(
+        charge_point_id=charge_point.id
+    )
+    session.add(modem)
     return charge_point
 
 
@@ -74,9 +78,23 @@ async def update_charge_point(
 
 
 @apply_types
+async def update_modem(
+        charge_point_id: str,
+        payload: Dict,
+        session=Context()):
+    stmt = update(Modem) \
+        .where(Modem.charge_point_id == charge_point_id) \
+        .values(**payload) \
+        .returning(Modem)
+    scalar_result = await session.scalars(stmt)
+    results = scalar_result.unique()
+    return results.first()
+
+
+@apply_types
 async def mark_charge_point_as_connected(charge_point_id: str, session=Context()):
     stmt = update(Connection) \
-        .where(Connection.charge_point_id == charge_point_id) \
+        .where(Connection.master_id == charge_point_id) \
         .values(is_active=True)
     await session.execute(stmt)
 
@@ -84,8 +102,20 @@ async def mark_charge_point_as_connected(charge_point_id: str, session=Context()
 @apply_types
 async def mark_charge_point_as_disconnected(charge_point_id: str, session=Context()):
     stmt = update(Connection) \
-        .where(Connection.charge_point_id == charge_point_id) \
+        .where(Connection.master_id == charge_point_id) \
         .values(is_active=False)
+    await session.execute(stmt)
+
+
+@apply_types
+async def update_connection(
+        charge_point_id: str,
+        payload: Dict,
+        session=Context()
+):
+    stmt = update(Connection) \
+        .where(Connection.master_id == charge_point_id) \
+        .values(**payload)
     await session.execute(stmt)
 
 

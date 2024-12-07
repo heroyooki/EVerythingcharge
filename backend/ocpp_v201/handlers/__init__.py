@@ -8,21 +8,13 @@ from propan import apply_types, Depends
 from app.web.charge_points import get_charge_point_service
 from ocpp_v201.handlers.base import OCPPHandler
 from ocpp_v201.scenarios.boot_notification import BootNotificationScenario
-from ocpp_v201.scenarios.data_transfer import DataTransferScenario
-from ocpp_v201.scenarios.heartbeat import HeartbeatScenario
-from ocpp_v201.scenarios.notify_event import NotifyEventScenario
-from ocpp_v201.scenarios.status_notification import StatusNotificationScenario
 
 
 class OCPP201Handler(
     OCPPHandler,
     ChargePoint201,
 
-    BootNotificationScenario,
-    StatusNotificationScenario,
-    HeartbeatScenario,
-    NotifyEventScenario,
-    DataTransferScenario
+    BootNotificationScenario
 ):
     pass
 

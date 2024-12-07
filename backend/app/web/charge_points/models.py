@@ -5,7 +5,6 @@ from sqlalchemy import (
     String,
     ForeignKey,
     UniqueConstraint,
-    PrimaryKeyConstraint,
     SmallInteger
 )
 from sqlalchemy.dialects.postgresql import JSONB
@@ -25,8 +24,8 @@ class ChargePoint(Model):
 
     id = Column(String(20), primary_key=True)
     vendor_name = Column(String, nullable=False)
-    serial_number = Column(String, nullable=True)
     model = Column(String, nullable=False)
+    serial_number = Column(String, nullable=True)
     firmware_version = Column(String, nullable=True)
     custom_data = Column(JSONB, default=dict)
 
@@ -39,14 +38,16 @@ class ChargePoint(Model):
         foreign_keys=[Location.master_id],
         primaryjoin="ChargePoint.id==Location.master_id",
         lazy="joined",
-        uselist=False
+        uselist=False,
+        viewonly=True
     )
     connection = relationship(
         Connection,
         foreign_keys=[Connection.master_id],
         primaryjoin="ChargePoint.id==Connection.master_id",
         lazy="joined",
-        uselist=False
+        uselist=False,
+        viewonly=True
     )
     evses = relationship("EVSE", back_populates="charge_point", lazy="joined")
 
@@ -54,7 +55,7 @@ class ChargePoint(Model):
 class EVSE(Model):
     __tablename__ = "evses"
     __table_args__ = (
-        PrimaryKeyConstraint("id", "charge_point_id"),
+        UniqueConstraint("id", "charge_point_id"),
     )
 
     id = Column(String(20), primary_key=True)
@@ -71,7 +72,8 @@ class EVSE(Model):
         foreign_keys=[Connection.master_id],
         primaryjoin="EVSE.id==Connection.master_id",
         lazy="joined",
-        uselist=False
+        uselist=False,
+        viewonly=True
     )
 
 
@@ -79,7 +81,7 @@ class Connector(Model):
     __tablename__ = "connectors"
 
     __table_args__ = (
-        PrimaryKeyConstraint("id", "evse_id"),
+        UniqueConstraint("id", "evse_id"),
     )
 
     id = Column(String(20), primary_key=True)
@@ -92,7 +94,8 @@ class Connector(Model):
         foreign_keys=[Connection.master_id],
         primaryjoin="Connector.id==Connection.master_id",
         lazy="joined",
-        uselist=False
+        uselist=False,
+        viewonly=True
     )
 
 

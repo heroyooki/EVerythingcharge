@@ -4,6 +4,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
+from app.web.accounts.models import Account
 from app.web.locations.models import Location
 from core.models import Model
 
@@ -17,7 +18,7 @@ class Grid(Model):
     supplier = Column(String, nullable=False)
 
     account_id = Column(String, ForeignKey("accounts.id", ondelete='CASCADE'), nullable=False)
-    account = relationship("Account", back_populates="grids", lazy="joined")
+    account = relationship(Account, back_populates="grids", lazy="joined")
 
     charge_points = relationship("ChargePoint", back_populates="grid", lazy="joined")
 
@@ -26,5 +27,6 @@ class Grid(Model):
         foreign_keys=[Location.master_id],
         primaryjoin="Grid.id==Location.master_id",
         lazy="joined",
-        uselist=False
+        uselist=False,
+        viewonly=True
     )

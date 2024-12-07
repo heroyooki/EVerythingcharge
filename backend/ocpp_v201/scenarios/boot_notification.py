@@ -1,46 +1,80 @@
-from typing import Any, Dict
+from traceback import format_exc
+from typing import Dict, Any
 
+import arrow
 from loguru import logger
 from ocpp.routing import on
 from ocpp.v201 import call_result
-from ocpp.v201.enums import RegistrationStatusType, Action
-from propan import apply_types, Depends
+from ocpp.v201.enums import (
+    Action, BootReasonType, RegistrationStatusType
+)
+from propan import apply_types, Depends, Context
+from sqlalchemy.exc import TimeoutError
 
 from app.web.charge_points import get_charge_point_service
-from app.web.charge_points.views import UpdateChargePointPayloadView
-from core.dependencies import get_formatted_utc, get_settings
+from app.web.charge_points.views import (
+    UpdateChargePointPayloadView
+)
+from app.web.connections.views import ConnectionView
+from core.dependencies import get_settings
+
+
+@apply_types
+async def update_charge_point_and_connection(
+        data: Dict,
+        reason: BootReasonType,
+        custom_data: Dict,
+        service: Any = Depends(get_charge_point_service),
+        settings: Any = Depends(get_settings),
+        charge_point_id=Context()
+):
+    status = RegistrationStatusType.accepted
+
+    with logger.contextualize(charge_point_id=charge_point_id):
+        logger.info(f"Accepted '{Action.BootNotification}'")
+
+        try:
+            connection_data = ConnectionView(reason=reason, custom_data=custom_data)
+            logger.info("Updating connection", data=connection_data.model_dump(exclude_unset=True))
+            await service.update_connection(
+                charge_point_id=charge_point_id,
+                payload=connection_data.model_dump(exclude_unset=True),
+            )
+
+            charge_point_data = UpdateChargePointPayloadView(**data)
+            logger.info("Updating charge point", data=charge_point_data.model_dump(exclude_unset=True))
+            await service.update_charge_point(
+                charge_point_id=charge_point_id,
+                payload=charge_point_data.model_dump(exclude_unset=True),
+            )
+        except TimeoutError:
+            logger.error(f"Failed to accept '{Action.BootNotification}' due to conections pool issue",
+                         data={"error": format_exc()})
+            status = RegistrationStatusType.pending
+        except Exception:
+            logger.error(f"Failed to accept '{Action.BootNotification}' due to unrecognized error",
+                         data={"error": format_exc()})
+            status = RegistrationStatusType.rejected
+        finally:
+            return call_result.BootNotificationPayload(
+                current_time=arrow.utcnow().datetime.strftime(settings.UTC_DATETIME_FORMAT),
+                interval=settings.HEARTBEAT_INTERVAL,
+                status=status
+            )
 
 
 class BootNotificationScenario:
 
-    @apply_types
     @on(Action.BootNotification)
     async def on_boot_notification(
-            self_,
-            utc_datetime: str = Depends(get_formatted_utc),
-            charging_station: Dict = Depends(lambda charging_station: charging_station),
-            reason: str = Depends(lambda reason: reason),
-            service: Any = Depends(get_charge_point_service),
-            settings: Any = Depends(get_settings),
+            self,
+            charging_station: Dict,
+            reason: str,
             **kwargs
     ):
-        logger.info(
-            f"Accepted '{Action.BootNotification}' "
-            f"(charging_station={charging_station}, "
-            f"reason={reason}, "
-            f"charge_point_id={self_.id}, "
-            f"kwargs={kwargs})"
-        )
-        payload = UpdateChargePointPayloadView(
-            model=charging_station.get("model"),
-            vendor=charging_station.get("vendor_name")
-        )
-        await service.update_charge_point(
-            charge_point_id=self_.id,
-            payload=payload.dict()
-        )
-        return call_result.BootNotificationPayload(
-            current_time=utc_datetime,
-            interval=settings.HEARTBEAT_INTERVAL,
-            status=RegistrationStatusType.accepted,
+        return await update_charge_point_and_connection(
+            charge_point_id=self.id,
+            data=charging_station,
+            reason=reason,
+            custom_data=kwargs
         )

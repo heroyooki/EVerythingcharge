@@ -19,5 +19,6 @@ class Account(Model):
         foreign_keys=[Location.master_id],
         primaryjoin="Account.id==Location.master_id",
         lazy="joined",
-        uselist=False
+        uselist=False,
+        viewonly=True
     )

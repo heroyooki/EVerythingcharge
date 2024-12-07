@@ -41,7 +41,7 @@ async def handle_events(
         payload: str,
         _=Depends(init_local_scope),
         session: AsyncSession = Context(),
-        charge_point_id: str = Context(),
+        charge_point_id: str = Context()
 ):
     logger.info(f"Accepted payload", extra={"charge_point_id": charge_point_id, "payload": payload})
     handler: OCPP201Handler = await get_handler(charge_point_id)

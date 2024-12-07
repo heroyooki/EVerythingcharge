@@ -1,11 +1,24 @@
 from datetime import datetime
-from typing import Union, List, Any
+from typing import Union, List, Any, Dict
 
 from ocpp.v16.enums import ChargePointStatus, ChargePointErrorCode
-from ocpp.v201.enums import ConnectorStatusType, StatusInfoReasonType
+from ocpp.v201.enums import ConnectorStatusType
 from pydantic import BaseModel, field_validator, Field, ConfigDict
 
 from app.web.views import PaginationView
+
+
+class ChargePointModemView(BaseModel):
+    iccid: Union[str, None] = None
+    imsi: Union[str, None] = None
+
+
+class UpdateChargePointPayloadView(BaseModel):
+    model: str
+    vendor_name: str
+    serial_number: Union[str, None] = None
+    firmware_version: Union[str, None] = None
+    custom_data: Dict = dict()
 
 
 class CreateChargPointPayloadView(BaseModel):
@@ -40,14 +53,6 @@ class ConfigurationView(BaseModel):
         :return:
         """
         return value.lower()
-
-
-class UpdateChargePointPayloadView(BaseModel):
-    model: Union[str, None] = None
-    vendor: Union[str, None] = None
-    status: Union[ChargePointStatus, ConnectorStatusType, None] = None
-    error_code: Union[ChargePointErrorCode, StatusInfoReasonType] = None
-    evse_id: Union[int, None] = None
 
 
 class SimpleChargePoint(BaseModel):
