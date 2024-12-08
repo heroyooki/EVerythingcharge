@@ -2,6 +2,7 @@
 node_modules/
 /dist/
 db_data
+mongodb_data
 .env
 .env.local
 __pycache__
