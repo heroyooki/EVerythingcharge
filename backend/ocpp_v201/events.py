@@ -29,13 +29,12 @@ async def init_local_scope(
     async with get_contextual_session() as session:
         context.set_local("session", session)
         context.set_local("charge_point_id", charge_point_id)
-        context.set_global("get_ocpp_handler", get_handler)
 
 
 async def init_global_scope(context):
     # The part of the RPC approcah.
     context.set_global("response_queues", dict())
-    context.set_global("get_handler", get_handler)
+    context.set_global("get_ocpp_handler", get_handler)
 
 
 @broker.handle(EVENTS_QUEUE_NAME, exchange=events_exchange)
