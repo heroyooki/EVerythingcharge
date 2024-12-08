@@ -3,7 +3,7 @@ from typing import Dict, Any
 
 import arrow
 from loguru import logger
-from ocpp.routing import on
+from ocpp.routing import on, after
 from ocpp.v201 import call_result
 from ocpp.v201.enums import (
     Action, BootReasonType, RegistrationStatusType
@@ -69,6 +69,21 @@ async def _on_boot_notification(
             )
 
 
+@apply_types
+async def _after_boot_notification(
+        call_unique_id,
+        data: Dict,
+        reason: BootReasonType,
+        custom_data: Dict,
+        service: Any = Depends(get_charge_point_service),
+        settings: Any = Depends(get_settings),
+        charge_point_id=Context(),
+        session: Any = Context()
+):
+    with logger.contextualize(charge_point_id=charge_point_id, call_unique_id=call_unique_id):
+        logger.info(f"Post processing '{Action.BootNotification}'")
+
+
 class BootNotificationScenario:
 
     @on(Action.BootNotification)
@@ -79,6 +94,22 @@ class BootNotificationScenario:
             **kwargs
     ):
         return await _on_boot_notification(
+            charge_point_id=self.id,
+            data=charging_station,
+            reason=reason,
+            custom_data=kwargs
+        )
+
+    @after(Action.BootNotification)
+    async def after_boot_notification(
+            self,
+            call_unique_id,
+            charging_station: Dict,
+            reason: str,
+            **kwargs
+    ):
+        return await _after_boot_notification(
+            call_unique_id,
             charge_point_id=self.id,
             data=charging_station,
             reason=reason,
