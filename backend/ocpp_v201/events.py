@@ -29,7 +29,7 @@ async def init_local_scope(
     async with get_contextual_session() as session:
         context.set_local("session", session)
         context.set_local("charge_point_id", charge_point_id)
-        context.set_global("get_handler", get_handler)
+        context.set_global("get_ocpp_handler", get_handler)
 
 
 async def init_global_scope(context):
@@ -43,10 +43,10 @@ async def handle_events(
         payload: str,
         _=Depends(init_local_scope),
         charge_point_id: str = Context(),
-        get_handler: Any = Context()
+        get_ocpp_handler: Any = Context()
 ):
     logger.info(f"Accepted payload", extra={"charge_point_id": charge_point_id, "payload": payload})
-    handler: OCPP201Handler = await get_handler(charge_point_id)
+    handler: OCPP201Handler = await get_ocpp_handler(charge_point_id)
     await handler.route_message(payload)
 
 
