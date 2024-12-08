@@ -9,7 +9,7 @@ from ocpp.v201.enums import (
     Action, BootReasonType, RegistrationStatusType
 )
 from propan import apply_types, Depends, Context
-from sqlalchemy.exc import TimeoutError
+from sqlalchemy.exc import TimeoutError, InterfaceError
 
 from app.web.charge_points import get_charge_point_service
 from app.web.charge_points.views import (
@@ -20,13 +20,14 @@ from core.dependencies import get_settings
 
 
 @apply_types
-async def update_charge_point_and_connection(
+async def _on_boot_notification(
         data: Dict,
         reason: BootReasonType,
         custom_data: Dict,
         service: Any = Depends(get_charge_point_service),
         settings: Any = Depends(get_settings),
-        charge_point_id=Context()
+        charge_point_id=Context(),
+        session: Any = Context()
 ):
     status = RegistrationStatusType.accepted
 
@@ -47,11 +48,16 @@ async def update_charge_point_and_connection(
                 charge_point_id=charge_point_id,
                 payload=charge_point_data.model_dump(exclude_unset=True),
             )
-        except TimeoutError:
+            await session.commit()
+        except (TimeoutError, InterfaceError):
+            # In case of DB issues, make station to connect later.
+            await session.rollback()
             logger.error(f"Failed to accept '{Action.BootNotification}' due to conections pool issue",
                          data={"error": format_exc()})
             status = RegistrationStatusType.pending
         except Exception:
+            # This is an unrecognized problem, so lets deny station to connect, until to address it.
+            await session.rollback()
             logger.error(f"Failed to accept '{Action.BootNotification}' due to unrecognized error",
                          data={"error": format_exc()})
             status = RegistrationStatusType.rejected
@@ -72,7 +78,7 @@ class BootNotificationScenario:
             reason: str,
             **kwargs
     ):
-        return await update_charge_point_and_connection(
+        return await _on_boot_notification(
             charge_point_id=self.id,
             data=charging_station,
             reason=reason,
