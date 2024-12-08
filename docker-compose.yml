@@ -1,6 +1,7 @@
 version: "2.2"
 
 services:
+
   everythingcharge-frontend:
     container_name: everythingcharge-frontend
     restart: always
@@ -67,23 +68,6 @@ services:
     networks:
       - app-network
 
-  everythingcharge-mongodb:
-    image: mongo:6.0
-    container_name: everythingcharge-mongodb
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: "${MONGODB_USER}"
-      MONGO_INITDB_ROOT_PASSWORD: "${MONGODB_PASSWORD}"
-    ports:
-      - "${MONGODB_PORT}:${MONGODB_PORT}"
-    volumes:
-      - ./mongodb_data:/data/db
-    networks:
-      - app-network
-    healthcheck:
-      test: "exit 0"
-    command: [ "mongod", "--auth" ]
-
   everythingcharge-api:
     container_name: everythingcharge-api
     build:
@@ -106,8 +90,6 @@ services:
       everythingcharge-rabbitmq:
         condition: service_healthy
       everythingcharge-db:
-        condition: service_healthy
-      everythingcharge-mongodb:
         condition: service_healthy
     healthcheck:
       test: "exit 0"
