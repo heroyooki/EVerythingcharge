@@ -1,4 +1,3 @@
-import asyncio
 import json
 from typing import Any, Dict
 
@@ -9,9 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.web.charge_points import get_charge_point_service
 from app.web.exceptions import NotFound
+from app.web.logs import get_logs_service
 from core.broker import broker, events_exchange, connections_exchange
 from core.dependencies import get_id_from_amqp_headers
-from core.models import get_contextual_session
+from core.repositories import get_contextual_session
 from core.settings import (
     EVENTS_QUEUE_NAME,
     NEW_CONNECTION_QUEUE_NAME,
@@ -42,8 +42,10 @@ async def handle_events(
         payload: str,
         _=Depends(init_local_scope),
         charge_point_id: str = Context(),
+        service: Any = Depends(get_logs_service),
         get_ocpp_handler: Any = Context()
 ):
+    await service.store_payload(charge_point_id, payload)
     logger.info(f"Accepted payload", extra={"charge_point_id": charge_point_id, "payload": payload})
     handler: OCPP201Handler = await get_ocpp_handler(charge_point_id)
     await handler.route_message(payload)
@@ -54,7 +56,6 @@ async def accept_new_connection(
         _=Depends(init_local_scope),
         service: Any = Depends(get_charge_point_service),
         charge_point_id: str = Depends(get_id_from_amqp_headers),
-        response_queues: Dict = Context(),
         session: AsyncSession = Context()
 ):
     with logger.contextualize(charge_point_id=charge_point_id):
@@ -72,7 +73,6 @@ async def accept_new_connection(
             )
             logger.info(f"Cancelling connection")
         else:
-            response_queues[charge_point_id] = asyncio.Queue()
             await service.mark_charge_point_as_connected(charge_point_id)
             logger.info(f"Accepted connection")
 

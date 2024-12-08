@@ -29,6 +29,7 @@ from app.web.users.controllers import (
 from core.annotations import TasksRepo
 from core.broker import broker
 from core.middlewares import DBSessionMiddleware
+from core.repositories import ensure_indexes
 from core.settings import ALLOWED_ORIGIN
 from ocpp_v201.events import init_global_scope
 
@@ -71,3 +72,5 @@ async def startup(tasks_repo: TasksRepo, context: ContextRepo):
     # The event loop only keeps weak references to tasks.
     tasks_repo.add(task)
     await init_global_scope(context)
+    # mongo db indexes
+    await ensure_indexes()

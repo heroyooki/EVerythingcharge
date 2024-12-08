@@ -3,7 +3,7 @@ from propan import apply_types
 from propan.annotations import ContextRepo
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from core.models import get_contextual_session
+from core.repositories import get_contextual_session
 
 
 class DBSessionMiddleware(BaseHTTPMiddleware):

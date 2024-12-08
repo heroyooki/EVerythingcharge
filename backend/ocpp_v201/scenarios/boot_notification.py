@@ -16,6 +16,7 @@ from app.web.charge_points.views import (
     UpdateChargePointPayloadView
 )
 from app.web.connections.views import ConnectionView
+from app.web.logs import get_logs_service
 from core.dependencies import get_settings
 
 
@@ -72,15 +73,11 @@ async def _on_boot_notification(
 @apply_types
 async def _after_boot_notification(
         call_unique_id,
-        data: Dict,
-        reason: BootReasonType,
-        custom_data: Dict,
-        service: Any = Depends(get_charge_point_service),
-        settings: Any = Depends(get_settings),
-        charge_point_id=Context(),
-        session: Any = Context()
+        service: Any = Depends(get_logs_service),
+        charge_point_id=Context()
 ):
-    with logger.contextualize(charge_point_id=charge_point_id, call_unique_id=call_unique_id):
+    call_results = await service.find_payloads_by_id(call_unique_id)
+    with logger.contextualize(charge_point_id=charge_point_id, call_results=call_results):
         logger.info(f"Post processing '{Action.BootNotification}'")
 
 

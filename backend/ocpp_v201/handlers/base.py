@@ -1,6 +1,7 @@
 import asyncio
 import uuid
 from dataclasses import asdict
+from typing import Any
 
 from loguru import logger
 from ocpp.charge_point import ChargePoint as cp, snake_to_camel_case, remove_nones, camel_to_snake_case
@@ -11,6 +12,7 @@ from propan import apply_types, Context
 
 from app.web.charge_points.models import ChargePoint
 from app.web.exceptions.forbidden import ChargePointIsWaitingForAnotherResponse
+from app.web.logs import get_logs_service
 from core.annotations import TasksExchange
 from core.dependencies import get_settings
 
@@ -44,6 +46,7 @@ class OCPPHandler(cp):
         self_.id = charge_point.id
         self_.charge_point = charge_point
         self_._unique_id_generator = uuid.uuid4
+        response_queues[self_.id] = response_queues.get(self_.id, asyncio.Queue())
         self_._response_queue = response_queues[self_.id]
         self_._response_timeout = settings.RESPONSE_TIMEOUT
         self_.route_map = create_route_map(self_)
@@ -56,6 +59,7 @@ class OCPPHandler(cp):
             self_,
             payload,
             exchange: TasksExchange,
+            service: Any = Depends(get_logs_service),
             broker=Context()
     ):
         await broker.publish(
@@ -65,6 +69,7 @@ class OCPPHandler(cp):
             content_type="text/plain",
             headers=self_.amqp_headers
         )
+        await service.store_payload(self_.id, payload)
 
     async def call(self, payload, suppress=True, unique_id=None):
         """
