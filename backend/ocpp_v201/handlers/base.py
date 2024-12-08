@@ -132,7 +132,11 @@ class OCPPHandler(cp):
         # called with a call.HeartbeatPayload, then it will create a
         # call_result.HeartbeatPayload etc.
         cls = getattr(self._call_result, payload.__class__.__name__)  # noqa
-        return cls(**snake_case_payload)
+        try:
+            return cls(**snake_case_payload)
+        finally:
+            async with locks_lock:
+                del locks[self.id]
 
     # To prevent default behavior because we dont need it
     async def start(self_):
