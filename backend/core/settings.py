@@ -14,6 +14,10 @@ DB_PORT = int(os.environ["DB_PORT"])
 DB_USER = os.environ["DB_USER"]
 DB_HOST = os.environ["DB_HOST"]
 
+MONGODB_USER = os.environ["MONGODB_USER"]
+MONGODB_PASSWORD = os.environ["MONGODB_PASSWORD"]
+MONGODB_PORT = int(os.environ["MONGODB_PORT"])
+
 WS_SERVER_PORT = int(os.environ["WS_SERVER_PORT"])
 OCPP_SUBPROTOCOLS = ["ocpp2.0.1"]
 
