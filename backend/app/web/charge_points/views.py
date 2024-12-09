@@ -23,7 +23,7 @@ class UpdateChargePointPayloadView(BaseModel):
 
 class CreateChargPointPayloadView(BaseModel):
     id: str = Field(..., max_length=20)
-    network_id: Union[str, None] = None
+    grid_id: str
 
 
 class CreateConfigurationView(BaseModel):

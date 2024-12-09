@@ -23,8 +23,8 @@ class ChargePoint(Model):
     )
 
     id = Column(String(20), primary_key=True)
-    vendor_name = Column(String, nullable=False)
-    model = Column(String, nullable=False)
+    vendor_name = Column(String, nullable=True)
+    model = Column(String, nullable=True)
     serial_number = Column(String, nullable=True)
     firmware_version = Column(String, nullable=True)
     custom_data = Column(JSONB, default=dict)

@@ -7,7 +7,6 @@ from sqlalchemy.sql import selectable
 
 from app.web.charge_points.models import ChargePoint, Connector, Configuration, Connection, Modem
 from app.web.charge_points.views import (
-    CreateChargPointPayloadView,
     CreateConfigurationView
 )
 from app.web.exceptions import NotFound
@@ -39,20 +38,16 @@ async def build_charge_points_query(
 
 @apply_types
 async def create_charge_point(
-        data: CreateChargPointPayloadView,
+        data: Dict,
         session=Context()
 ) -> ChargePoint:
-    charge_point = ChargePoint(**data.model_dump())
+    charge_point = ChargePoint(**data)
     session.add(charge_point)
     connection = Connection(
         master_id=charge_point.id,
         is_active=False
     )
     session.add(connection)
-    modem = Modem(
-        charge_point_id=charge_point.id
-    )
-    session.add(modem)
     return charge_point
 
 

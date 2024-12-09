@@ -1,5 +1,5 @@
 from . import service
 
 
-async def get_logs_service():
+def get_logs_service():
     return service
