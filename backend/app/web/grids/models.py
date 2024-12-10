@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Column,
-    String, ForeignKey, BigInteger
+    String, ForeignKey, BigInteger, UniqueConstraint
 )
 from sqlalchemy.orm import relationship
 
@@ -11,9 +11,12 @@ from core.models import Model
 
 class Grid(Model):
     __tablename__ = "grids"
+    __table_args__ = (
+        UniqueConstraint("account_id", "name"),
+    )
 
-    name = Column(String, nullable=False, unique=True)
-    capacity = Column(BigInteger, nullable=True)
+    name = Column(String, nullable=False)
+    capacity = Column(BigInteger, nullable=False)
     unit = Column(String, nullable=False)
     supplier = Column(String, nullable=False)
 
