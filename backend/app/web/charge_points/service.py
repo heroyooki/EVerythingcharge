@@ -5,9 +5,10 @@ from sqlalchemy import select, update, or_, func, String, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import selectable
 
-from app.web.charge_points.models import ChargePoint, Connector, Configuration, Connection, Modem
-from app.web.charge_points.views import (
-    CreateConfigurationView
+from app.web.charge_points.models import (
+    ChargePoint,
+    Connector,
+    Connection
 )
 from app.web.exceptions import NotFound
 
@@ -67,20 +68,6 @@ async def update_charge_point(
         .where(ChargePoint.id == charge_point_id) \
         .values(**payload) \
         .returning(ChargePoint)
-    scalar_result = await session.scalars(stmt)
-    results = scalar_result.unique()
-    return results.first()
-
-
-@apply_types
-async def update_modem(
-        charge_point_id: str,
-        payload: Dict,
-        session=Context()):
-    stmt = update(Modem) \
-        .where(Modem.charge_point_id == charge_point_id) \
-        .values(**payload) \
-        .returning(Modem)
     scalar_result = await session.scalars(stmt)
     results = scalar_result.unique()
     return results.first()
@@ -159,14 +146,3 @@ async def get_charge_point_or_404(charge_point_id: str) -> ChargePoint:
     if not charge_point:
         raise NotFound(detail=f"The charge point with id: '{charge_point_id}' has not found.")
     return charge_point
-
-
-@apply_types
-async def create_configurations(
-        charge_point_id: str,
-        data: List[CreateConfigurationView],
-        session=Context()
-):
-    session.add_all(
-        [Configuration(**config.model_dump(), charge_point_id=charge_point_id) for config in data]
-    )

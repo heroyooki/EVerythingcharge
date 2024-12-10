@@ -19,9 +19,6 @@ from app.web.exceptions.handlers import (
     unexpected_exceptions_handler,
     format_custom_exception
 )
-from app.web.networks.controllers import (
-    private_router as networks_private_router
-)
 from app.web.users.controllers import (
     public_router as users_public_router,
     private_router as users_private_router
@@ -58,7 +55,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(networks_private_router)
 app.include_router(users_private_router)
 app.include_router(users_public_router)
 app.include_router(charge_points_router)

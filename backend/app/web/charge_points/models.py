@@ -4,8 +4,7 @@ from sqlalchemy import (
     Column,
     String,
     ForeignKey,
-    UniqueConstraint,
-    SmallInteger
+    UniqueConstraint
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
@@ -31,8 +30,6 @@ class ChargePoint(Model):
 
     grid_id = Column(String, ForeignKey("grids.id", ondelete='SET NULL'), nullable=False)
     grid = relationship(Grid, back_populates="charge_points", lazy="joined")
-    configurations = relationship("Configuration", back_populates="charge_point", lazy="joined")
-    modem = relationship("Modem", back_populates="charge_point", lazy="joined", uselist=False)
     location = relationship(
         Location,
         foreign_keys=[Location.master_id],
@@ -97,30 +94,3 @@ class Connector(Model):
         uselist=False,
         viewonly=True
     )
-
-
-class Configuration(Model):
-    __tablename__ = "configurations"
-
-    __table_args__ = (
-        UniqueConstraint("key", "charge_point_id"),
-    )
-
-    id = Column(SmallInteger, primary_key=True)
-    key = Column(String, nullable=False)
-    value = Column(String, nullable=False)
-    verbose = Column(String, nullable=True)
-
-    charge_point_id = Column(String, ForeignKey("charge_points.id", ondelete='CASCADE'), nullable=False)
-    charge_point = relationship("ChargePoint", back_populates="configurations", lazy="joined")
-
-
-class Modem(Model):
-    __tablename__ = "modems"
-
-    id = Column(SmallInteger, primary_key=True)
-
-    iccid = Column(String, nullable=True)
-    imsi = Column(String, nullable=True)
-    charge_point_id = Column(String, ForeignKey("charge_points.id", ondelete='CASCADE'), nullable=False)
-    charge_point = relationship("ChargePoint", back_populates="modem", lazy="joined")

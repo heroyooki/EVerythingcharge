@@ -8,11 +8,6 @@ from pydantic import BaseModel, field_validator, Field, ConfigDict
 from app.web.views import PaginationView
 
 
-class ChargePointModemView(BaseModel):
-    iccid: Union[str, None] = None
-    imsi: Union[str, None] = None
-
-
 class UpdateChargePointPayloadView(BaseModel):
     model: str
     vendor_name: str
