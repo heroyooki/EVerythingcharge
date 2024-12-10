@@ -75,8 +75,8 @@ async def accept_new_connection(
         else:
             await service.mark_charge_point_as_connected(charge_point_id)
             logger.info(f"Accepted connection")
-
-    await session.commit()
+        finally:
+            await session.commit()
 
 
 @broker.handle(LOST_CONNECTION_QUEUE_NAME, exchange=connections_exchange)

@@ -41,17 +41,17 @@ def BootNotificationMessageWithPowerUp():
 
 @pytest.fixture
 def TEST_MAX_CHARGE_POINTS_COUNT():
-    return 50
+    return 5
 
 
 @pytest.fixture
-def NEW_CONNECTION_AWAITING_DELAY():
-    return 0.2
+def NEW_CONNECTION_AWAITING_DELAY(TEST_MAX_CHARGE_POINTS_COUNT):
+    return TEST_MAX_CHARGE_POINTS_COUNT // 5
 
 
 @pytest.fixture
-def INTERRUPTED_CONNECTION_AWAITING_DELAY():
-    return 0.7
+def INTERRUPTED_CONNECTION_AWAITING_DELAY(TEST_MAX_CHARGE_POINTS_COUNT):
+    return TEST_MAX_CHARGE_POINTS_COUNT // 5
 
 
 @pytest.fixture
