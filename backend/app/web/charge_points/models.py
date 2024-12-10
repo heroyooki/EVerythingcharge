@@ -4,7 +4,7 @@ from sqlalchemy import (
     Column,
     String,
     ForeignKey,
-    UniqueConstraint
+    UniqueConstraint, SmallInteger
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
@@ -52,11 +52,10 @@ class ChargePoint(Model):
 class EVSE(Model):
     __tablename__ = "evses"
     __table_args__ = (
-        UniqueConstraint("id", "charge_point_id"),
+        UniqueConstraint("order_id", "charge_point_id"),
     )
 
-    id = Column(String(20), primary_key=True)
-
+    order_id = Column(SmallInteger, autoincrement=True)
     charge_point_id = Column(String, ForeignKey("charge_points.id", ondelete='CASCADE'), nullable=False)
     charge_point = relationship("ChargePoint", back_populates="evses", lazy="joined")
     connectors = relationship("Connector",
@@ -78,11 +77,10 @@ class Connector(Model):
     __tablename__ = "connectors"
 
     __table_args__ = (
-        UniqueConstraint("id", "evse_id"),
+        UniqueConstraint("order_id", "evse_id"),
     )
 
-    id = Column(String(20), primary_key=True)
-
+    order_id = Column(SmallInteger, autoincrement=True)
     evse_id = Column(String, ForeignKey("evses.id", ondelete='CASCADE'), nullable=False)
     evse = relationship("EVSE", back_populates="connectors", lazy="joined")
 
