@@ -7,6 +7,7 @@ from propan.annotations import ContextRepo
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.web.charge_points import get_charge_point_service
+from app.web.charge_points.models import AMQP_STATUS_MAPPER
 from app.web.exceptions import NotFound
 from app.web.logs import get_logs_service
 from core.broker import broker, events_exchange, connections_exchange
@@ -29,6 +30,7 @@ async def init_local_scope(
     async with get_contextual_session() as session:
         context.set_local("session", session)
         context.set_local("charge_point_id", charge_point_id)
+        context.set_local("status_mapper", AMQP_STATUS_MAPPER)
 
 
 async def init_global_scope(context):
@@ -56,9 +58,9 @@ async def accept_new_connection(
         _=Depends(init_local_scope),
         service: Any = Depends(get_charge_point_service),
         charge_point_id: str = Depends(get_id_from_amqp_headers),
-        session: AsyncSession = Context()
+        session=Context()
 ):
-    with logger.contextualize(charge_point_id=charge_point_id):
+    with logger.contextualize(charge_point_id=charge_point_id, session_id=session.id):
         try:
             await service.get_charge_point_or_404(charge_point_id)
         except NotFound:
@@ -87,7 +89,7 @@ async def process_lost_connection(
         response_queues: Dict = Context(),
         session: AsyncSession = Context()
 ):
-    with logger.contextualize(charge_point_id=charge_point_id):
+    with logger.contextualize(charge_point_id=charge_point_id, session_id=session.id):
         response_queues.pop(charge_point_id, None)
         await service.mark_charge_point_as_disconnected(charge_point_id)
         await session.commit()

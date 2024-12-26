@@ -1,9 +1,11 @@
 from uuid import uuid4
 
+import arrow
 import pytest
 import pytest_asyncio
 import websockets
-from ocpp.v201.enums import BootReasonType, Action
+from ocpp.messages import MessageType
+from ocpp.v201.enums import BootReasonType, Action, ConnectorStatusType
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
@@ -23,7 +25,7 @@ settings = get_settings()
 def BootNotificationMessageWithPowerUp():
     def return_message():
         data = [
-            2,
+            MessageType.Call,
             str(uuid4()),
             Action.BootNotification,
             {
@@ -32,6 +34,25 @@ def BootNotificationMessageWithPowerUp():
                     "model": "SingleSocketCharger",
                     "vendorName": "VendorX"
                 }
+            }
+        ]
+        return data
+
+    return return_message
+
+
+@pytest.fixture
+def StatusNotificationMessageWithAvailableStatus():
+    def return_message(evse_id, connector_id):
+        data = [
+            MessageType.Call,
+            str(uuid4()),
+            Action.StatusNotification,
+            {
+                "timestamp": arrow.utcnow().datetime.strftime(settings.UTC_DATETIME_FORMAT),
+                "connectorStatus": ConnectorStatusType.available,
+                "evseId": evse_id,
+                "connectorId": connector_id
             }
         ]
         return data

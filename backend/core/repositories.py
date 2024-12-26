@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from uuid import uuid4
 
+from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -29,11 +31,16 @@ asession = init_db(settings.DATABASE_ASYNC_URL)
 
 @asynccontextmanager
 async def get_contextual_session() -> AsyncSession:
-    async with asession() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
+    session_id = str(uuid4())
+    with logger.contextualize(session_id=session_id):
+        logger.info("Opened new db session")
+        async with asession() as session:
+            try:
+                session.id = session_id
+                yield session
+            finally:
+                await session.close()
+                logger.info("Closed db session")
 
 
 async def get_session() -> AsyncSession:

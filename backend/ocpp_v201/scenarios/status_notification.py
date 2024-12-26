@@ -8,6 +8,8 @@ from ocpp.v201.enums import Action, ConnectorStatusType
 from propan import apply_types, Depends, Context
 
 from app.web.charge_points import get_charge_point_service
+from app.web.connections.service import update_connection
+from app.web.connections.views import ConnectionView
 from app.web.logs import get_logs_service
 
 
@@ -22,15 +24,32 @@ async def _on_status_notification(
         charge_point_id=Context(),
         session: Any = Context()
 ):
-    with logger.contextualize(charge_point_id=charge_point_id):
-        logger.info(f"Accepted '{Action.StatusNotification}'", extra={
-            "timestamp": timestamp,
-            "connector_status": connector_status,
-            "evse_id": evse_id,
-            "connector_id": connector_id,
-            "custom_data": custom_data
-        })
+    with logger.contextualize(charge_point_id=charge_point_id, session_id=session.id):
+        logger.info(f"Accepted '{Action.StatusNotification}'")
+        charge_point = await service.get_charge_point(charge_point_id)
+        if service.is_connector_id_common(connector_id):
+            data = ConnectionView(status=connector_status)
+            await update_connection(charge_point_id, data.model_dump(exclude_unset=True))
+            logger.info("Updated entire station status", extra={"status": charge_point.connection.status})
+            await session.commit()
+            return call_result.StatusNotificationPayload()
 
+        """
+        Since we don’t remove EVSEs and stations when the WebSocket connection fails,
+        let’s first check if one already exists.
+        """
+        if not charge_point.has_evse(evse_id):
+            evse = await service.create_evse(charge_point_id, evse_id)
+        else:
+            evse = charge_point.get_evse(charge_point_id, evse_id)
+
+        if not evse.has_connector(connector_id):
+            connector = await service.create_connector(evse, connector_id)
+        else:
+            connector = evse.get_connector(connector_id)
+
+        await connector.apply_status(connector_status)
+        await session.commit()
         return call_result.StatusNotificationPayload()
 
 

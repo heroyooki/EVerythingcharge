@@ -15,6 +15,7 @@ from app.web.charge_points import get_charge_point_service
 from app.web.charge_points.views import (
     UpdateChargePointPayloadView
 )
+from app.web.connections.service import update_connection
 from app.web.connections.views import ConnectionView
 from app.web.logs import get_logs_service
 from core.dependencies import get_settings
@@ -32,16 +33,13 @@ async def _on_boot_notification(
 ):
     status = RegistrationStatusType.accepted
 
-    with logger.contextualize(charge_point_id=charge_point_id):
+    with logger.contextualize(charge_point_id=charge_point_id, session_id=session.id):
         logger.info(f"Accepted '{Action.BootNotification}'")
 
         try:
             connection_data = ConnectionView(reason=reason, custom_data=custom_data)
             logger.info("Updating connection", data=connection_data.model_dump(exclude_unset=True))
-            await service.update_connection(
-                charge_point_id=charge_point_id,
-                payload=connection_data.model_dump(exclude_unset=True),
-            )
+            await update_connection(charge_point_id, connection_data.model_dump(exclude_unset=True))
 
             charge_point_data = UpdateChargePointPayloadView(**data)
             logger.info("Updating charge point", data=charge_point_data.model_dump(exclude_unset=True))
